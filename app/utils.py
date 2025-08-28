@@ -1,33 +1,31 @@
 import string
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Optional, Coroutine
 
-from aiogram import Bot, F
+from aiogram import Bot
 from aiogram.enums import ParseMode
-from aiogram.types import Message, User, Chat, InlineKeyboardMarkup, CallbackQuery, BufferedInputFile, FSInputFile
+from aiogram.types import Message, User, InlineKeyboardMarkup, CallbackQuery, BufferedInputFile, FSInputFile
 from datetime import datetime, time, timedelta
 import json
 from datetime import date
 from zoneinfo import ZoneInfo
 
-from aiogram.utils import keyboard
-
 import app.database.models
 import texts
-from app.database.requests import did_user_mark_purchase
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 import config
 import app.keyboards.general_keyboards as gkb
 import app.database.requests as rq
-import app.database.models as models
 
 
 scheduler = AsyncIOScheduler()
 MOSCOW_TZ = ZoneInfo("Europe/Moscow")
 
-# order important due to circular imports
-from app.routers.user_router import router1
+import app.routers.user_router
+# # order important due to circular imports - BULLSHIT, try through main
+# # also, it is prob not needed in here
+# from app.routers.user_router import router1
 
 
 def log_lesson_message_error(e: Exception):
@@ -38,7 +36,7 @@ def log_lesson_message_error(e: Exception):
 
 async def check_user_subscription(user_id: int, bot: Bot):
     member = await bot.get_chat_member(chat_id=config.CHANNEL_ID, user_id=user_id)
-    print(f'{member.status}\n\n\n')
+    # print(f'member status: {member.status}\n\n\n')
 
     return member.status in ['member', 'administrator', 'creator']
 
@@ -92,8 +90,7 @@ async def send_lesson_message(lesson_message_order : int, message: Message, bot:
                 print(f"Error parsing buttons: {e}")
         if lesson_info.image:
             image_file = get_photo_from_database(lesson_info)
-            print("AA")
-            await send_message_with_photo(bot, message.chat.profile_accent_color_id, image_file, lesson_info.text, reply_markup)
+            await send_message_with_photo(bot, message.chat.id, image_file, lesson_info.text, reply_markup)
         if lesson_message_order != 1:
             scheduler.remove_all_jobs()
             # await message.edit_reply_markup(reply_markup=None)
@@ -109,12 +106,13 @@ async def add_timer_for_webinar_time_choice_reminder(bot: Bot, message):
                       args=(bot, message))
 
 
-async def send_webinar_time_choice_reminder(bot: Bot, chat_id : int, message: Message):
-    await bot.send_message(chat_id=chat_id,
+async def send_webinar_time_choice_reminder(bot: Bot, message: Message):
+    await bot.send_message(chat_id=message.chat.id,
                            text=texts.WEBINAR_REMINDER_0,
                            reply_markup=gkb.webinar_time_choice_keyboard,
                            parse_mode=ParseMode.HTML)
 
+    chat_id : int = message.chat.id
     now = datetime.now(MOSCOW_TZ)
 
     today_2359 = datetime.combine(
@@ -132,9 +130,10 @@ async def send_webinar_time_choice_reminder(bot: Bot, chat_id : int, message: Me
                        last_name="Scheduled",
                        ),
         chat_instance="simulated_instance",
-        data="selected_webinar_time_15:00",
+        data="selected_webinar_time_12:00",
         message=message
     )
+
 
     # Schedule the job
     scheduler.add_job(
@@ -182,7 +181,7 @@ async def send_subscription_reminder(bot: Bot, index : int, message : Message):
 async def add_timer_for_webinar_reminders(bot: Bot, callback: CallbackQuery, reminder_index : int):
     # set the date of message for tomorrow
     if reminder_index == 3:
-        time_chosen = rq.get_user_webinar_time(callback.from_user.id)  # await  ?
+        time_chosen = await rq.get_user_webinar_time(callback.from_user.id)  # await  ?
         if time_chosen is None:
             time_chosen = "19:00"
 
@@ -224,6 +223,9 @@ async def send_webinar_reminder(bot: Bot, callback: CallbackQuery, reminder_inde
     text = text.format(webinar_time)
     message_info = await rq.get_webinar_reminder_info(reminder_index)
     image_file = get_photo_from_database(message_info)
+
+    if reminder_index == 10:
+        await bot.send_video_note(callback.message.chat.id,video_note=FSInputFile("assets/videos/webinar_video_note.mp4"))
     if message_info.image:
         await send_message_with_photo(bot,
                                       callback.message.chat.id,
@@ -241,7 +243,7 @@ async def send_webinar_reminder(bot: Bot, callback: CallbackQuery, reminder_inde
         if not await rq.get_user_flag_1(callback.from_user.id):
             scheduler.add_job(send_question_1_message,
                               run_date=datetime.now() + timedelta(seconds=10),  # 10 minutes
-                              args=[bot, callback.from_user.id])
+                              args=[bot, callback.message])
         else:  # not sending question about the webinar appearance 2nd time
             await add_timer_for_first_offer(bot, callback, 1)
 
@@ -264,7 +266,8 @@ async def set_flag_2(user_id : int):
     await rq.set_user_flag_2(user_id)
 
 
-async def send_question_1_message(bot: Bot, user_id : int):
+async def send_question_1_message(bot: Bot, message : Message):
+    user_id = message.chat.id
     await set_flag_1(user_id)
     await bot.send_photo(chat_id=user_id,
                          photo=FSInputFile(r"assets/images/question_1_photo.jpg"),
@@ -274,18 +277,19 @@ async def send_question_1_message(bot: Bot, user_id : int):
 
 
     scheduler.add_job(restart_webinar_messages,
-                      run_date= datetime.now() + timedelta(seconds=10), # 120 minutes
-                      args = user_id, bot=bot)
+                      run_date= datetime.now() + timedelta(seconds=20), # 120 minutes
+                      args = [message, bot])
 
 
-async def restart_webinar_messages(user_id : int, bot : Bot, ):
+async def restart_webinar_messages(message : Message, bot : Bot):
     scheduler.remove_all_jobs()
+    user_id = message.chat.id
 
     # I am setting it in send_question_1_message
     # await set_flag_1(callback.from_user.id)
     # Re-expires the buttons, also needed for setting 19:00 by default (if user doesn't choose anything)
     await rq.reset_webinar_date_time(user_id)
-    await app.utils.send_lesson_message(3, chat_id = user_id, bot=bot)
+    await app.utils.send_lesson_message(3, message= message, bot=bot)
 
 
 async def send_first_offer_message(bot: Bot, callback: CallbackQuery, order_index):
@@ -295,6 +299,7 @@ async def send_first_offer_message(bot: Bot, callback: CallbackQuery, order_inde
         return
 
     message_info = await rq.get_first_offer_info(order_index)
+
 
     if message_info.image:
         photo = get_photo_from_database(message_info)
@@ -314,7 +319,7 @@ async def send_first_offer_message(bot: Bot, callback: CallbackQuery, order_inde
         if not await rq.get_user_flag_2(callback.from_user.id):
             scheduler.add_job(send_question_2_message,
                               run_date=datetime.now() + timedelta(seconds=10),  # 7 days
-                              args=[bot, callback.message.chat.id])
+                              args=[bot, callback.message])
             # await rq.set_user_flag_2(callback.from_user.id)
             # done at another place - right after the choice in question 2
         else:  # not sending question about the webinar appearance 2nd time
@@ -336,13 +341,17 @@ async def add_timer_for_first_offer(bot: Bot, callback: CallbackQuery, reminder_
     )
 
 
-async def send_question_2_message(bot: Bot, user_id):
+async def send_question_2_message(bot: Bot, message : Message) -> None:
+    user_id = message.chat.id
     await set_flag_2(user_id)
     await bot.send_message(chat_id=user_id,
                            text=texts.QUESTION_MESSAGE_2,
                            reply_markup=gkb.question_1_keyboard,
                            parse_mode=ParseMode.HTML)
 
+    scheduler.add_job(restart_webinar_messages,
+                      run_date= datetime.now() + timedelta(seconds=20), # 120 minutes
+                      args = [message, bot])
 
 async def send_final_offer_message(bot: Bot, callback: CallbackQuery, order_index):
     text = await rq.get_final_offer_text(order_index)
@@ -421,14 +430,12 @@ def get_keyboard_from_database(row: Any) -> Optional[InlineKeyboardMarkup]:
 
 
 async def send_message_with_photo(bot, chat_id, photo, text, mes_keyboard):
-    print(chat_id)
     if len(text) > 1020:
-        print("too long")
         await bot.send_photo(chat_id=chat_id,
                              photo=photo)
         await bot.send_message(chat_id=chat_id,
                                text=text,
-                               reply_markup=None,
+                               reply_markup=mes_keyboard,
                            parse_mode=ParseMode.HTML)
     else:
         await bot.send_photo(chat_id=chat_id,
@@ -438,7 +445,7 @@ async def send_message_with_photo(bot, chat_id, photo, text, mes_keyboard):
                            parse_mode=ParseMode.HTML)
 
 
-def read_file_as_binary(path: str) -> bytes:
+def read_file_as_binary(path: str) -> bytes | None:
     """Reads a PDF file and returns its binary content"""
     try:
         # Convert to absolute path if needed

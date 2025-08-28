@@ -1,15 +1,12 @@
 from aiogram import F
 from aiogram.filters import Command
-from aiogram import Router, types, Bot
+from aiogram import Router, Bot
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, ReplyKeyboardRemove, CallbackQuery
-from sqlalchemy.util import await_only
+from aiogram.types import Message, CallbackQuery
 
 from app.filters.admin_filter import IsAdminFilter
 from app.middlewares import TestMiddleWare
 
-
-import app.keyboards.general_keyboards as gkb
 import app.keyboards.admin_keyboards as akb
 import app.database.requests as rq
 import app.routers.States as States
@@ -39,7 +36,6 @@ async def admin_panel(message: Message, bot : Bot):
 @admin_router.message(F.text.lower() == "отмена")
 async def cancel(message: Message, state : FSMContext):
     if await state.get_state() is not None:
-        print(await state.get_state())
         await state.clear()
         await message.answer("Процедура отменена", reply_markup=akb.admin_keyboard)
 
@@ -55,18 +51,18 @@ async def initialize_broadcast(message: Message, state: FSMContext):
     await state.set_state(States.BroadcastState.waiting_for_message)
 
 # order matters
-@admin_router.message(F.text == "Изменить исходные дожимающие сообщения")
-async def change_selling_messages_texts(message : Message, state: FSMContext):
-    await state.clear()
-    # current_state = await state.get_state()
-    # if current_state and current_state.split(':')[0] == 'BroadcastState':
-    #     await message.answer("Задача рассылки прервана")
-    #     await state.clear()
-    # elif await state.get_state():
-
-    await message.answer("Выберите номер сообщения, которое вы хотите изменить",
-                         reply_markup=akb.selling_message_options_keyboard)
-    await state.set_state(States.ChangingSellingMessagesState.waiting_for_message_order_choice)
+# @admin_router.message(F.text == "Изменить исходные дожимающие сообщения")
+# async def change_selling_messages_texts(message : Message, state: FSMContext):
+#     await state.clear()
+#     # current_state = await state.get_state()
+#     # if current_state and current_state.split(':')[0] == 'BroadcastState':
+#     #     await message.answer("Задача рассылки прервана")
+#     #     await state.clear()
+#     # elif await state.get_state():
+#
+#     await message.answer("Выберите номер сообщения, которое вы хотите изменить",
+#                          reply_markup=akb.selling_message_options_keyboard)
+#     await state.set_state(States.ChangingSellingMessagesState.waiting_for_message_order_choice)
 
 
 @admin_router.message(States.BroadcastState.waiting_for_message)
@@ -103,12 +99,11 @@ async def broadcast(message: Message, state: FSMContext, bot : Bot):
     users = (await rq.get_all_users_ids()).all()
     print(f'Users: {users}')
     length = len(users)
-    print(length)
     success_am = length
 
     for user_id in users:
         try :
-            print(States.BroadcastState.broadcast_message)
+            # print("member" + States.BroadcastState.broadcast_message)
             # await bot.send_message(chat_id=user_id, text=BroadcastStates.broadcast_message)
             await bot.send_message(chat_id=user_id, text=broadcast_message['message'])
         except Exception as e:

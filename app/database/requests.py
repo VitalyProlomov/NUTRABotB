@@ -239,9 +239,8 @@ async def initialize_broadcast_messages():
                     image=utils.read_file_as_binary(r"assets/images/lesson_3_photo.jpg"),
                     buttons={
                         "inline_keyboard": [
-                            [{"text": "15:00", "callback_data": "selected_webinar_time_15:00"},
-                             {"text": "19:00", "callback_data": "selected_webinar_time_19:00"}]
-                        ]
+                            [{"text": "12:00", "callback_data": "selected_webinar_time_12:00"}],
+                             [{"text": "19:00", "callback_data": "selected_webinar_time_19:00"}]                        ]
                     }
                 ),
             ]
@@ -374,8 +373,8 @@ async def initialize_first_offer_messages():
                                    image=utils.read_file_as_binary(
                                        r"assets/images/first_offer/first_offer_3_photo.jpg"),
                                    buttons={
-                                       "inline_keyboard": [[{"text": "Хочу мини-курс",
-                                                             "url": MINI_COURSE_LINK}],
+                                       "inline_keyboard": [[{"text": "Хочу в Body Up",
+                                                             "url": BODY_UP_LINK}],
                                                            [{"text": "Написать в службу заботы",
                                                              "url": CARE_CENTER_LINK}]
                                                            ]
@@ -449,7 +448,6 @@ async def set_user(message: Message):
 
 
 async def get_webinar_reminder_text(message_order):
-    print(message_order)
     async with async_session() as session:
         reminder = await session.scalar(select(WebinarMessages).
                                         where(WebinarMessages.order_of_sending == message_order))
@@ -482,7 +480,6 @@ async def get_first_offer_info(message_order):
 
 
 async def get_first_offer_text(message_order):
-    print(message_order)
     async with async_session() as session:
         reminder = await session.scalar(select(FirstOfferMessages).
                                         where(FirstOfferMessages.order_of_sending == message_order))
@@ -504,7 +501,6 @@ async def get_final_offer_info(message_order):
 
 
 async def get_final_offer_text(message_order):
-    print(message_order)
     async with async_session() as session:
         reminder = await session.scalar(select(FinalOfferMessages).
                                         where(FinalOfferMessages.order_of_sending == message_order))

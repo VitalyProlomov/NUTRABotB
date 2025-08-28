@@ -3,18 +3,15 @@ import logging
 
 
 from aiogram import Bot, Dispatcher
-from aiogram.types import BotCommand
 
-import app.utils
-from app.database.requests import deleteTHIS
 from config import TOKEN
 from app.routers.user_router import router1
 from app.routers.admin_router import admin_router
 from app.database.models import async_main
 from app.utils import scheduler
-from aiogram.types import BotCommand
 
 import app.database.requests as rq
+
 async def on_startup():
 
     await rq.initialize_broadcast_messages()

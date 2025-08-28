@@ -1,10 +1,6 @@
 from aiogram.types import (ReplyKeyboardMarkup, KeyboardButton,
                            InlineKeyboardMarkup, InlineKeyboardButton)
 
-from aiogram.utils.keyboard import KeyboardBuilder, ReplyKeyboardBuilder, InlineKeyboardBuilder
-
-from config import CHANNEL_NAME
-
 admin_keyboard = ReplyKeyboardMarkup(keyboard=[
     [KeyboardButton(text="Рассылка Сообщения")],
     [KeyboardButton(text="Подсчет пользователей бота")],

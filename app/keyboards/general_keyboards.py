@@ -1,9 +1,4 @@
-import string
-
-from aiogram.types import (ReplyKeyboardMarkup, KeyboardButton,
-                           InlineKeyboardMarkup, InlineKeyboardButton)
-
-from aiogram.utils.keyboard import KeyboardBuilder, ReplyKeyboardBuilder, InlineKeyboardBuilder
+from aiogram.types import (InlineKeyboardMarkup, InlineKeyboardButton)
 
 from config import CHANNEL_NAME
 
@@ -13,7 +8,7 @@ subscription_key_board = InlineKeyboardMarkup(inline_keyboard=[
 ])
 
 webinar_time_choice_keyboard = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text='15:00', callback_data="selected_webinar_time_15:00")],
+    [InlineKeyboardButton(text='12:00', callback_data="selected_webinar_time_12:00")],
     [InlineKeyboardButton(text='19:00', callback_data="selected_webinar_time_19:00")]
 ])
 

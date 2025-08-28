@@ -8,7 +8,6 @@ from aiogram.types import Message, CallbackQuery, FSInputFile
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.fsm.context import FSMContext
 from aiogram import Bot
-from aiohttp import request
 
 import app.utils
 import app.keyboards.general_keyboards as gkb
@@ -83,7 +82,8 @@ async def print_greet_message(message: Message, bot: Bot):
 @router1.callback_query(F.data.startswith("next_lesson"))
 async def send_lesson_message_from_button_click(callback: CallbackQuery, bot : Bot):
     index = callback.data.split("_")[-1]
-    await utils.send_lesson_message(index, chat_id=callback.message.chat.id, bot=bot)
+    scheduler.remove_all_jobs()
+    await utils.send_lesson_message(int(index), message=callback.message, bot=bot)
 
 
 @router1.callback_query(F.data.startswith("selected_webinar_time"))
@@ -106,11 +106,11 @@ async def set_webinar_time_date(callback: CallbackQuery, bot : Bot):
         await utils.add_timer_for_webinar_reminders(bot, callback, 1)
 
 
-
-@router1.callback_query(F.data == "mark_purchase")
-async def markPurchase(message: Message):
-    await rq.mark_purchase(message.from_user.id)
-    await message.answer("Отлично, спасибо за покупку :)")
+#
+# @router1.callback_query(F.data == "mark_purchase")
+# async def markPurchase(message: Message):
+#     await rq.mark_purchase(message.from_user.id)
+#     await message.answer("Отлично, спасибо за покупку :)")
 
 
 @router1.callback_query(F.data == 'check_subscription')
@@ -136,7 +136,7 @@ async def restart_webinar_reminders(callback: CallbackQuery, bot: Bot):
     # await set_flag_1(callback.from_user.id)
     # Re-expires the buttons, also needed for setting 19:00 by default (if user doesn't choose anything)
     await rq.reset_webinar_date_time(callback.from_user.id)
-    await utils.send_lesson_message(3, chat_id=callback.message.chat.id, bot=bot)
+    await utils.send_lesson_message(3, message=callback.message, bot=bot)
 
 
 @router1.callback_query(F.data.startswith("chosen_at_1_questionary_yes"))
@@ -157,7 +157,7 @@ async def restart_webinar_reminders(callback: CallbackQuery, bot: Bot):
     # await set_flag_1(callback.from_user.id)
     # Re-expires the buttons, also needed for setting 19:00 by default (if user doesn't choose anything)
     await rq.reset_webinar_date_time(callback.from_user.id)
-    await utils.send_lesson_message(3, chat_id= callback.message.chat.id, bot=bot)
+    await utils.send_lesson_message(3, message=callback.message, bot=bot)
 
 
 @router1.callback_query(F.data.startswith("chosen_at_2_questionary_yes"))
