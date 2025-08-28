@@ -135,43 +135,43 @@ async def process_changing_selling_message_1_option(callback: CallbackQuery, sta
 @admin_router.callback_query(F.data == "selling_message_2_option", States.ChangingSellingMessagesState.waiting_for_message_order_choice)
 async def process_changing_selling_message_2_option(callback :CallbackQuery, state : FSMContext, bot : Bot):
     await process_changing_selling_message(option_ind=2,state=state, bot=bot, chat_id=callback.from_user.id)
+#
+# async def process_changing_selling_message(
+#         option_ind : int,
+#         bot : Bot,
+#         state: FSMContext,
+#         chat_id):
+#     await bot.send_message(text=f'Напишите сообщение, на которое вы бы хотели заменить текущее {option_ind} дожимающее сообщение\n'
+#                            f'Напишите ОТМЕНА для отмены изменений', chat_id=chat_id)
+#
+#     await state.update_data(option_ind=option_ind)
+#     await state.set_state(States.ChangingSellingMessagesState.waiting_for_new_message)
+#
+#
+# @admin_router.message(States.ChangingSellingMessagesState.waiting_for_new_message)
+# async def get_new_message(message : Message, state : FSMContext):
+#
+#     await state.update_data(message=message.text)
+#
+#     data = await state.get_data()
+#     await message.answer(
+#         f'Подтвердите изменение {data['option_ind']} дожимающего сообщения на :\n\n{message.text}',
+#         reply_markup=akb.confirmation_keyboard
+#     )
+#     await state.set_state(States.ChangingSellingMessagesState.waiting_for_confirmation)
 
-async def process_changing_selling_message(
-        option_ind : int,
-        bot : Bot,
-        state: FSMContext,
-        chat_id):
-    await bot.send_message(text=f'Напишите сообщение, на которое вы бы хотели заменить текущее {option_ind} дожимающее сообщение\n'
-                           f'Напишите ОТМЕНА для отмены изменений', chat_id=chat_id)
-
-    await state.update_data(option_ind=option_ind)
-    await state.set_state(States.ChangingSellingMessagesState.waiting_for_new_message)
-
-
-@admin_router.message(States.ChangingSellingMessagesState.waiting_for_new_message)
-async def get_new_message(message : Message, state : FSMContext):
-
-    await state.update_data(message=message.text)
-
-    data = await state.get_data()
-    await message.answer(
-        f'Подтвердите изменение {data['option_ind']} дожимающего сообщения на :\n\n{message.text}',
-        reply_markup=akb.confirmation_keyboard
-    )
-    await state.set_state(States.ChangingSellingMessagesState.waiting_for_confirmation)
-
-
-@admin_router.message(F.text == "Подтвердить ✅",
-                      States.ChangingSellingMessagesState.waiting_for_confirmation)
-async def change_message( message: Message, state: FSMContext, bot : Bot):
-    data = await state.get_data()
-    # try:
-    #TODO ADD delay time from user
-    result = await rq.edit_selling_message(data['option_ind'], data['message'], 8)
-    if result:
-        await message.answer(f'Успешно изменили {data['option_ind']} дожимающее сообщение на:'
-                                   f' \n\n{data["message"]}',
-                                   reply_markup=akb.admin_keyboard)
+#
+# @admin_router.message(F.text == "Подтвердить ✅",
+#                       States.ChangingSellingMessagesState.waiting_for_confirmation)
+# async def change_message( message: Message, state: FSMContext, bot : Bot):
+#     data = await state.get_data()
+#     # try:
+#     #TODO ADD delay time from user
+#     result = await rq.edit_selling_message(data['option_ind'], data['message'], 8)
+#     if result:
+#         await message.answer(f'Успешно изменили {data['option_ind']} дожимающее сообщение на:'
+#                                    f' \n\n{data["message"]}',
+#                                    reply_markup=akb.admin_keyboard)
     # except Exception as e:
     #     print(e)
     #     await message.answer(f'Не удалось изменить дожимающее сообщение, попробуйте снова или обратитесь к программисту для уточнения проблемы. '

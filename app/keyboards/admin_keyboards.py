@@ -4,7 +4,7 @@ from aiogram.types import (ReplyKeyboardMarkup, KeyboardButton,
 admin_keyboard = ReplyKeyboardMarkup(keyboard=[
     [KeyboardButton(text="Рассылка Сообщения")],
     [KeyboardButton(text="Подсчет пользователей бота")],
-    [KeyboardButton(text="Изменить исходные дожимающие сообщения")],
+    # [KeyboardButton(text="Изменить исходные дожимающие сообщения")],
 ], resize_keyboard=True)
 
 confirmation_keyboard = ReplyKeyboardMarkup(keyboard=[
