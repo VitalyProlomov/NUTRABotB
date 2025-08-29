@@ -48,11 +48,11 @@ async def does_user_exist(tg_id : int) -> bool:
 async def remove_user(tg_id : int) -> bool:
     async with async_session() as session:
         try:
-            user = session.query(User).filter(User.id == tg_id).first()
-
+            res = await session.execute(select(User).where(User.tg_id == tg_id))
+            user = res.scalar_one_or_none()
             if user:
-                session.delete(user)
-                session.commit()
+                await session.delete(user)
+                await session.commit()
                 print("User deleted successfully")
                 return True
             else:

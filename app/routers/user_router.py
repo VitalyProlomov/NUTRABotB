@@ -32,7 +32,7 @@ class Reg(StatesGroup):
 
 @router1.message(CommandStart())
 async def cmd_start(message: Message, bot: Bot):
-    if rq.does_user_exist(message.from_user.id):
+    if await rq.does_user_exist(message.from_user.id):
         await bot.send_message(message.from_user.id, "Чтобы перезапустить бота, напишите /restart")
         return
     # Since bot can only be started with /start command
@@ -62,13 +62,16 @@ async def cmd_start(message: Message, bot: Bot):
     await app.utils.add_timer_for_lessons_message(1, message, bot)
 
 @router1.message(Command('restart'))
-async def restart(callback: CallbackQuery, bot: Bot):
-    if rq.does_user_exist(callback.from_user.id):
-        res = await rq.remove_user(callback.message.chat.id)
+async def restart(message: Message, bot: Bot):
+    if await rq.does_user_exist(message.from_user.id):
+        res = await rq.remove_user(message.chat.id)
+
         if res:
-            await cmd_start(callback.message, bot)
+            await cmd_start(message, bot)
+        else:
+            await bot.send_message(message.from_user.id, "Cannot restart currently")
     else:
-        await cmd_start(callback.message, bot)
+        await cmd_start(message, bot)
 
 async def print_greet_message(message: Message, bot: Bot):
     image_path = Path("assets/images/1.jpg")
