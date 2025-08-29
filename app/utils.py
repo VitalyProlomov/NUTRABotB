@@ -193,7 +193,9 @@ async def add_timer_for_webinar_reminders(bot: Bot, callback: CallbackQuery, rem
         #     tzinfo=MOSCOW_TZ
         # )
         if time_chosen == "19:00":
-            start_time += timedelta(seconds=10) # 2 hours
+            start_time += timedelta(seconds=4) # ? hours - need to check, prob 4
+
+        scheduler.remove_all_jobs()
 
         scheduler.add_job(
             send_webinar_reminder,
