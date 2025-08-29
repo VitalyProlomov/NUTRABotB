@@ -636,7 +636,7 @@ BODY_UP_LINK = "http://ekaterina-hodianok.ru"
 
 MINI_COURSE_LINK = "https://ekaterina-hodianok.tb.ru/course"
 
-WEBINAR_LINK = "https://google.com"
+WEBINAR_LINK = "https://start.bizon365.ru/room/196812/bodyup"
 
 # WEBINAR_LINK = "https://ekaterina-hodianok.tb.ru/course"
 
