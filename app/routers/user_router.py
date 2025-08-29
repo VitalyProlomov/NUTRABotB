@@ -61,10 +61,12 @@ async def cmd_start(message: Message, bot: Bot):
     await print_greet_message(message, bot)
     await app.utils.add_timer_for_lessons_message(1, message, bot)
 
-@router1.callback_query(F.data == 'check_subscription')
+@router1.message(Command('restart'))
 async def restart(callback: CallbackQuery, bot: Bot):
     if rq.does_user_exist(callback.from_user.id):
         res = await rq.remove_user(callback.message.chat.id)
+        if res:
+            await cmd_start(callback.message, bot)
     else:
         await cmd_start(callback.message, bot)
 
