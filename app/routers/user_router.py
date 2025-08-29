@@ -32,6 +32,9 @@ class Reg(StatesGroup):
 
 @router1.message(CommandStart())
 async def cmd_start(message: Message, bot: Bot):
+    if rq.does_user_exist(message.from_user.id):
+        await bot.send_message(message.from_user.id, "Чтобы перезапустить бота, напишите /restart")
+        return
     # Since bot can only be started with /start command
     # await bot.send_message(message.from_user.id, "Message sent")
     await rq.set_user(message)
@@ -58,6 +61,12 @@ async def cmd_start(message: Message, bot: Bot):
     await print_greet_message(message, bot)
     await app.utils.add_timer_for_lessons_message(1, message, bot)
 
+@router1.callback_query(F.data == 'check_subscription')
+async def restart(callback: CallbackQuery, bot: Bot):
+    if rq.does_user_exist(callback.from_user.id):
+        res = await rq.remove_user(callback.message.chat.id)
+    else:
+        await cmd_start(callback.message, bot)
 
 async def print_greet_message(message: Message, bot: Bot):
     image_path = Path("assets/images/1.jpg")

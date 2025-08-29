@@ -39,6 +39,30 @@ async def did_user_mark_purchase(tg_id) -> bool:
             return False
         return user.didMarkPurchase
 
+async def does_user_exist(tg_id : int) -> bool:
+    async with async_session() as session:
+        res = await session.execute(select(User).where(User.tg_id == tg_id))
+        user = res.scalar()
+        return user is not None
+
+async def remove_user(tg_id : int) -> bool:
+    async with async_session() as session:
+        try:
+            user = session.query(User).filter(User.id == tg_id).first()
+
+            if user:
+                session.delete(user)
+                session.commit()
+                print("User deleted successfully")
+                return True
+            else:
+                print("User not found")
+                return False
+
+        except Exception as e:
+            session.rollback()
+            print(f"Error deleting user with tg_id: {tg_id}: {e}")
+            return False
 
 async def get_all_users_ids():
     async with async_session() as session:
