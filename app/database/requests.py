@@ -304,14 +304,14 @@ async def initialize_webinar_messages():
                                   image=utils.read_file_as_binary(r"assets/images/webinar/webinar_reminder_15_minutes_photo.jpg"),
                                   buttons={
                                       "inline_keyboard": [[{"text": "Занять место",
-                                                            "url": "https://google.com"}]]
+                                                            "url": texts.WEBINAR_LINK}]]
                                   }
                                   ),
                 WebinarMessages(text=texts.WEBINAR_REMINDER_6,
                                 order_of_sending=6, delay_time_minutes=1,  # 30
                                 image=utils.read_file_as_binary(r"assets/images/webinar/webinar_reminder_live_photo.jpg"),
                                 buttons={
-                                    "inline_keyboard": [[{"text": "Перейти к мастер классу", "url": "https://google.com"}]]
+                                    "inline_keyboard": [[{"text": "Перейти к мастер классу", "url": WEBINAR_LINK}]]
                                 }
                                 ),
                 WebinarMessages(text=texts.WEBINAR_REMINDER_7,
