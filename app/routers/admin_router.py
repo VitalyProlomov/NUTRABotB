@@ -95,8 +95,8 @@ async def broadcast(message: Message, state: FSMContext, bot : Bot):
     broadcast_message = await state.get_data()
     print(f'{broadcast_message}\n\n')
 
-    await message.answer(f"Рассылаем всем пользователям сообщение:\n\n{message.text}")
-    users = (await rq.get_all_users_ids()).all()
+    await message.answer(f"Рассылаем всем завершившим воронку пользователям сообщение:\n\n{message.text}")
+    users = (await rq.get_all_done_users_ids()).all()
     print(f'Users: {users}')
     length = len(users)
     success_am = length
@@ -127,15 +127,15 @@ async def countUsers(message: Message, state: FSMContext):
 
 
 
-@admin_router.callback_query(F.data == "selling_message_1_option",
-                             States.ChangingSellingMessagesState.waiting_for_message_order_choice)
-async def process_changing_selling_message_1_option(callback: CallbackQuery, state: FSMContext, bot : Bot):
-    await process_changing_selling_message(option_ind=1, state=state, bot=bot, chat_id=callback.from_user.id)
-
-@admin_router.callback_query(F.data == "selling_message_2_option", States.ChangingSellingMessagesState.waiting_for_message_order_choice)
-async def process_changing_selling_message_2_option(callback :CallbackQuery, state : FSMContext, bot : Bot):
-    await process_changing_selling_message(option_ind=2,state=state, bot=bot, chat_id=callback.from_user.id)
+# @admin_router.callback_query(F.data == "selling_message_1_option",
+#                              States.ChangingSellingMessagesState.waiting_for_message_order_choice)
+# async def process_changing_selling_message_1_option(callback: CallbackQuery, state: FSMContext, bot : Bot):
+#     await process_changing_selling_message(option_ind=1, state=state, bot=bot, chat_id=callback.from_user.id)
 #
+# @admin_router.callback_query(F.data == "selling_message_2_option", States.ChangingSellingMessagesState.waiting_for_message_order_choice)
+# async def process_changing_selling_message_2_option(callback :CallbackQuery, state : FSMContext, bot : Bot):
+#     await process_changing_selling_message(option_ind=2,state=state, bot=bot, chat_id=callback.from_user.id)
+# #
 # async def process_changing_selling_message(
 #         option_ind : int,
 #         bot : Bot,

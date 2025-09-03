@@ -378,6 +378,7 @@ async def send_final_offer_message(bot: Bot, callback: CallbackQuery, order_inde
                                )
 
     if await rq.get_final_offer_text(order_index + 1) is None:
+        await rq.set_stage(callback.message.chat.id, app.database.models.UserStage.DONE)
         return
 
     await add_timer_for_final_offer(bot, callback, order_index + 1)
