@@ -162,7 +162,7 @@ async def continue_with_selling_offer(callback: CallbackQuery, bot : Bot):
     # I am setting it in send_question_1_message
     # await set_flag_1(callback.from_user.id)
     await rq.reset_webinar_date_time(callback.from_user.id)
-    await utils.send_first_offer_message(bot, callback, 1)
+    await utils.send_final_offer_message(bot, callback, 1)
 
 
 @router1.callback_query(F.data == 'chosen_at_2_questionary_no')
