@@ -156,6 +156,8 @@ async def restart_webinar_reminders(callback: CallbackQuery, bot: Bot):
 @router1.callback_query(F.data.startswith("chosen_at_1_questionary_yes"))
 async def continue_with_selling_offer(callback: CallbackQuery, bot : Bot):
     scheduler.remove_all_jobs()
+    # For the 2nd question not to apper when user ansers 'yes' in 1st question
+    await utils.set_flag_2(callback.from_user.id)
 
     # I am setting it in send_question_1_message
     # await set_flag_1(callback.from_user.id)
