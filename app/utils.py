@@ -189,7 +189,7 @@ async def add_timer_for_webinar_reminders(bot: Bot, callback: CallbackQuery, rem
         start_time = now + timedelta(seconds=10)
         # start_time = datetime.combine(
         #     now.date() + timedelta(days=1),  # Next day
-        #     time(hour=9, minute=0),  # At 09:00
+        #     time(hour=6, minute=0),  # At 06:00
         #     tzinfo=MOSCOW_TZ
         # )
         if time_chosen == "19:00":
@@ -325,7 +325,8 @@ async def send_first_offer_message(bot: Bot, callback: CallbackQuery, order_inde
             # await rq.set_user_flag_2(callback.from_user.id)
             # done at another place - right after the choice in question 2
         else:  # not sending question about the webinar appearance 2nd time
-            await send_final_offer_message(bot, callback, 1)
+            #TODO await scheduler.add
+             await send_final_offer_message(bot, callback, 1)
 
         return
 
@@ -348,7 +349,7 @@ async def send_question_2_message(bot: Bot, message : Message) -> None:
     await set_flag_2(user_id)
     await bot.send_message(chat_id=user_id,
                            text=texts.QUESTION_MESSAGE_2,
-                           reply_markup=gkb.question_1_keyboard,
+                           reply_markup=gkb.question_2_keyboard,
                            parse_mode=ParseMode.HTML)
 
     scheduler.add_job(restart_webinar_messages,

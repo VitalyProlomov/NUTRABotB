@@ -181,7 +181,9 @@ async def continue_with_final_selling_offer(callback: CallbackQuery, bot : Bot):
     # I am setting it in send_question_1_message
     # await set_flag_1(callback.from_user.id)
     await rq.reset_webinar_date_time(callback.from_user.id)
-    await utils.send_final_offer_message(bot, callback, 1)
+
+    # Sends all the offers again
+    await utils.send_first_offer_message(bot, callback, 1)
 
 
 
