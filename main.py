@@ -7,7 +7,7 @@ from aiogram import Bot, Dispatcher
 from config import TOKEN
 from app.routers.user_router import router1
 from app.routers.admin_router import admin_router
-from app.database.models import async_main
+from app.database.models import async_main, UserStage
 from app.utils import scheduler
 
 import app.database.requests as rq
@@ -23,7 +23,6 @@ async def on_startup():
 
     # await rq.deleteTHIS()
 
-
 # async def set_bot_commands(bot: Bot):
 #     commands = [
 #         BotCommand(command="start", description="🚀 Начать работу"),
@@ -36,13 +35,9 @@ async def on_startup():
 #                     "Нажмите /start, чтобы начать."
 #     )
 
-
-
 async def main():
     await async_main()
     await on_startup()
-
-
 
     # await deleteTHIS()
     # print(await rq.get_selling_message(1))
