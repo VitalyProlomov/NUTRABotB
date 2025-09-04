@@ -96,7 +96,9 @@ async def broadcast(message: Message, state: FSMContext, bot : Bot):
     broadcast_message = await state.get_data()
     print(f'{broadcast_message}\n\n')
 
-    await message.answer(f"Рассылаем всем завершившим воронку пользователям сообщение:\n\n{message.text}")
+    await message.answer(f"Рассылаем всем завершившим воронку пользователям"
+                         f" сообщение:\n\n{States.BroadcastState.broadcast_message}",
+                         parse_mode=ParseMode.HTML)
     users = (await rq.get_all_done_users_ids()).all()
     print(f'Users: {users}')
     length = len(users)
