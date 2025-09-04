@@ -107,12 +107,10 @@ async def set_webinar_time_date(callback: CallbackQuery, bot : Bot):
     webinar_date = await rq.get_user_webinar_date(user_tg_id)
 
     if webinar_date is not None and utils.did_webinar_date_come(webinar_date):
-        return
+        return# buttons expired
 
     await rq.set_webinar_date_as_next_day(user_tg_id)
 
-    if webinar_date is not None and utils.did_webinar_date_come(webinar_date):
-        return # buttons expired
     if webinar_date is None or not utils.did_webinar_date_come(webinar_date):
         await rq.change_webinar_time(time, user_tg_id)
 
