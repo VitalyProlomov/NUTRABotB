@@ -1,4 +1,5 @@
 from aiogram import F
+from aiogram.enums import ParseMode
 from aiogram.filters import Command
 from aiogram import Router, Bot
 from aiogram.fsm.context import FSMContext
@@ -85,7 +86,7 @@ async def process_broadcast_message(message: Message, state: FSMContext):
 
     await message.answer(
         f"Подтверждаем рассылку?\n\nСообщение:\n{message.text}",
-        reply_markup=akb.confirmation_keyboard
+        reply_markup=akb.confirmation_keyboard, parse_mode=ParseMode.HTML
     )
 
 
@@ -105,7 +106,7 @@ async def broadcast(message: Message, state: FSMContext, bot : Bot):
         try :
             # print("member" + States.BroadcastState.broadcast_message)
             # await bot.send_message(chat_id=user_id, text=BroadcastStates.broadcast_message)
-            await bot.send_message(chat_id=user_id, text=broadcast_message['message'])
+            await bot.send_message(chat_id=user_id, text=broadcast_message['message'], parse_mode=ParseMode.HTML)
         except Exception as e:
             success_am -= 1
             print(f'Failed to send message to user {user_id}: {e}')
