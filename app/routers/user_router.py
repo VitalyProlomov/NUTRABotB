@@ -53,11 +53,12 @@ async def cmd_start(message: Message, bot: Bot):
 
     if not await app.utils.check_user_subscription(message.from_user.id, bot):
         await message.answer(WELCOME_MESSAGE,
-                             reply_markup=gkb.subscription_key_board,
-                             parse_mode=ParseMode.HTML)
+                         reply_markup=gkb.subscription_key_board,
+                         parse_mode=ParseMode.HTML)
         await app.utils.add_subscription_reminder(bot, message)
-        return
+        return #must be in the if statement
 
+    # these must be if subscription check is necessary
     await print_greet_message(message, bot)
     await app.utils.add_timer_for_lessons_message(1, message, bot)
 
@@ -105,6 +106,9 @@ async def set_webinar_time_date(callback: CallbackQuery, bot : Bot):
     time = callback.data.split("_")[-1]
     user_tg_id = callback.from_user.id
     webinar_date = await rq.get_user_webinar_date(user_tg_id)
+
+    if callback.from_user.first_name != "Fake_User_Callback" or callback.from_user.last_name != "Scheduled" is None:
+        await rq.add_choose_time_himself_metric(user_tg_id)
 
     if webinar_date is not None and utils.did_webinar_date_come(webinar_date):
         return# buttons expired
