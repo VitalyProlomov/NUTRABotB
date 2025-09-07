@@ -122,7 +122,7 @@ async def send_webinar_time_choice_reminder(bot: Bot, message: Message):
 
     today_2359 = datetime.combine(
         now.date(),  # Today's date
-        time(0, 14, ),  # 23:59 time
+        time(0, 16 ),  # 23:59 time
         tzinfo=MOSCOW_TZ  # Moscow timezone
     )
 
