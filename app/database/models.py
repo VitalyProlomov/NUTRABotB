@@ -89,19 +89,23 @@ class FinalOfferMessages(Base):
     delay_time_minutes: Mapped[BigInteger] = mapped_column(BigInteger, default=10)
     image: Mapped[String] = mapped_column(LargeBinary, nullable=True)
     buttons: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True, default = None)
-#
-# class Metrics(Base):
-#     __tablename__ = 'metrics'
-#     id: Mapped[int] = mapped_column(primary_key=True)
-#     code_name: Mapped[str] = mapped_column(unique=True, nullable=True)
-#     text: Mapped[str] = mapped_column(String(3000))
-#     # 1-based counting (index 1 is the very first message)
-#     order_of_sending: Mapped[int] = mapped_column(Integer)
-#     delay_time_minutes: Mapped[BigInteger] = mapped_column(BigInteger, default=10)
-#     image: Mapped[String] = mapped_column(LargeBinary, nullable=True)
-#     buttons: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True, default = None)
 
+class UserMetrics(Base):
+    __tablename__ = 'users_metrics'
 
+    id: Mapped[int] = mapped_column(primary_key=True) # auto increment is by deafult
+    tg_id: Mapped[BigInteger] = mapped_column(BigInteger, unique=True)
+    # tg_username : Mapped[str] = mapped_column(String(256))
+    first_flag : Mapped[Boolean] = mapped_column(Boolean, default=False)
+    second_flag: Mapped[Boolean] = mapped_column(Boolean, default=False)
+    # did_press_lesson_1_link: Mapped[bool] = mapped_column(Boolean, default=False)
+    # did_press_lesson_2_link: Mapped[bool] = mapped_column(Boolean, default=False)
+    # did_press_lesson_3_link: Mapped[bool] = mapped_column(Boolean, default=False)
+    did_choose_time_himself: Mapped[Boolean] = mapped_column(Boolean, default=False)
+    did_press_next_lesson_1 : Mapped[Boolean] = mapped_column(Boolean, default=False)
+    did_press_next_lesson_2 : Mapped[Boolean] = mapped_column(Boolean, default=False)
+    did_press_next_lesson_3 : Mapped[Boolean] = mapped_column(Boolean, default=False)
+    # did_click_subscribe : Mapped[Boolean] = mapped_column(Boolean, default=False)
 #
 # class Item(Base):
 #     __tablename__ = 'items'
@@ -112,7 +116,6 @@ class FinalOfferMessages(Base):
 #     price: Mapped[int] = mapped_column()
 #
 #     category: Mapped[int] = mapped_column(ForeignKey('categories.id'))
-
 
 async def async_main():
     async with engine.begin() as conn:
