@@ -184,7 +184,7 @@ async def send_subscription_reminder(bot: Bot, index: int, message: Message):
 
 async def add_timer_for_webinar_reminders(bot: Bot, callback: CallbackQuery, reminder_index: int):
     # set the date of message for tomorrow
-    if reminder_index == 3:
+    if reminder_index == 2:
         time_chosen = await rq.get_user_webinar_time(callback.from_user.id)  # await  ?
         if time_chosen is None:
             time_chosen = "19:00"

@@ -136,7 +136,7 @@ async def show_metrics(message: Message, state: FSMContext):
     lesson1 = await rq.count_users_who_did_press_lesson_himself_metric(1)
     lesson2 = await rq.count_users_who_did_press_lesson_himself_metric(2)
     lesson3 = await rq.count_users_who_did_press_lesson_himself_metric(3)
-    # TODO: questions
+    # TODO: fix Nones nulls and test
     await message.answer(f'''Метрики:
     - Всего пользователей: {len(users)}
     -----------------
