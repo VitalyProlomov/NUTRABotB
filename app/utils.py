@@ -10,6 +10,8 @@ import json
 from datetime import date
 from zoneinfo import ZoneInfo
 
+from sqlalchemy.util import await_only
+
 import app.database.models
 import texts
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -17,12 +19,15 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 import config
 import app.keyboards.general_keyboards as gkb
 import app.database.requests as rq
-
+import timings
+from timings import FIRST_OFFER_MESSAGE_1_TIME, QUESTION_MESSAGE_1_TIME
 
 scheduler = AsyncIOScheduler()
 MOSCOW_TZ = ZoneInfo("Europe/Moscow")
 
 import app.routers.user_router
+
+
 # # order important due to circular imports - BULLSHIT, try through main
 # # also, it is prob not needed in here
 # from app.routers.user_router import router1
@@ -41,7 +46,7 @@ async def check_user_subscription(user_id: int, bot: Bot):
     return member.status in ['member', 'administrator', 'creator']
 
 
-async def add_timer_for_lessons_message(lesson_mes_order : int, message : Message, bot: Bot):
+async def add_timer_for_lessons_message(lesson_mes_order: int, message: Message, bot: Bot):
     '''
     :param lesson_mes_order: defines which selling message is being scheduled (1 or 2 is available as for 05.05.2025)
     '''
@@ -67,7 +72,7 @@ async def add_timer_for_lessons_message(lesson_mes_order : int, message : Messag
 
 # The message is the one, that bot writes, so it is important to use chat_id when sending the selling message,
 # NOT the message.from_user.id
-async def send_lesson_message(lesson_message_order : int, message: Message, bot: Bot):
+async def send_lesson_message(lesson_message_order: int, message: Message, bot: Bot):
     try:
         # if not await did_user_mark_purchase(message.from_user.id):
         #     t = await rq.get_lesson_message_info(lesson_message_order)
@@ -102,7 +107,7 @@ async def send_lesson_message(lesson_message_order : int, message: Message, bot:
 
 async def add_timer_for_webinar_time_choice_reminder(bot: Bot, message):
     scheduler.add_job(send_webinar_time_choice_reminder, trigger='date',
-                      run_date=datetime.now() + timedelta(seconds=5),
+                      run_date=datetime.now() + timedelta(seconds=timings.WEBINAR_REMINDER_0_AUTO_TIME),
                       args=(bot, message))
 
 
@@ -112,7 +117,7 @@ async def send_webinar_time_choice_reminder(bot: Bot, message: Message):
                            reply_markup=gkb.webinar_time_choice_keyboard,
                            parse_mode=ParseMode.HTML)
 
-    chat_id : int = message.chat.id
+    chat_id: int = message.chat.id
     now = datetime.now(MOSCOW_TZ)
 
     today_2359 = datetime.combine(
@@ -126,14 +131,13 @@ async def send_webinar_time_choice_reminder(bot: Bot, message: Message):
         id=f'{chat_id}-{datetime.now()}',
         from_user=User(id=chat_id,
                        is_bot=False,
-                       first_name="User",
+                       first_name="Fake_User_Callback",
                        last_name="Scheduled",
                        ),
         chat_instance="simulated_instance",
-        data="selected_webinar_time_12:00",
+        data="selected_webinar_time_19:00",
         message=message
     )
-
 
     # Schedule the job
     scheduler.add_job(
@@ -146,10 +150,10 @@ async def send_webinar_time_choice_reminder(bot: Bot, message: Message):
 
 
 # Send message to channel
-async def sendButtonMessageToChannel(bot: Bot):
+async def send_button_message_to_channel(bot: Bot, text: string):
     await bot.send_message(
         chat_id=config.CHANNEL_ID,
-        text="This post has a **button**!",
+        text=text,
         reply_markup=gkb.channel_link_key_board,
         parse_mode=ParseMode.HTML  # Optional: Supports Markdown/HTML formatting
     )
@@ -158,18 +162,18 @@ async def sendButtonMessageToChannel(bot: Bot):
 async def add_subscription_reminder(bot: Bot, message):
     scheduler.add_job(send_subscription_reminder,
                       trigger='date',
-                      run_date=datetime.now() + timedelta(seconds=5),
+                      run_date=datetime.now() + timedelta(seconds=timings.SUBSCRIPTION_REMINDER_1_TIME),
                       args=(bot, 1, message))
 
 
-async def send_subscription_reminder(bot: Bot, index : int, message : Message):
+async def send_subscription_reminder(bot: Bot, index: int, message: Message):
     if index == 1:
         await bot.send_message(chat_id=message.chat.id, text=texts.SUBSCRIPTION_REMINDER_1,
                                reply_markup=gkb.subscription_key_board,
                                parse_mode=ParseMode.HTML)
         scheduler.add_job(send_subscription_reminder,
                           trigger='date',
-                          run_date=datetime.now() + timedelta(seconds=5),
+                          run_date=datetime.now() + timedelta(seconds=timings.SUBSCRIPTION_REMINDER_2_TIME),
                           args=(bot, 2, message))
         return
     if index == 2:
@@ -178,7 +182,7 @@ async def send_subscription_reminder(bot: Bot, index : int, message : Message):
                                parse_mode=ParseMode.HTML)
 
 
-async def add_timer_for_webinar_reminders(bot: Bot, callback: CallbackQuery, reminder_index : int):
+async def add_timer_for_webinar_reminders(bot: Bot, callback: CallbackQuery, reminder_index: int):
     # set the date of message for tomorrow
     if reminder_index == 3:
         time_chosen = await rq.get_user_webinar_time(callback.from_user.id)  # await  ?
@@ -186,14 +190,15 @@ async def add_timer_for_webinar_reminders(bot: Bot, callback: CallbackQuery, rem
             time_chosen = "19:00"
 
         now = datetime.now(MOSCOW_TZ)
-        start_time = now + timedelta(seconds=10)
-        # start_time = datetime.combine(
-        #     now.date() + timedelta(days=1),  # Next day
-        #     time(hour=6, minute=0),  # At 06:00
-        #     tzinfo=MOSCOW_TZ
-        # )
+        # start_time = now + timedelta(seconds=10) # test line
+
+        start_time = datetime.combine(
+            now.date() + timedelta(days=1),  # Next day
+            time(hour=6, minute=0),  # At 06:00
+            tzinfo=MOSCOW_TZ
+        )
         if time_chosen == "19:00":
-            start_time += timedelta(seconds=4) # ? hours - need to check, prob 4
+            start_time += timedelta(hours=19 - 12)  # ? hours - need to check, prob 7
 
         scheduler.remove_all_jobs()
 
@@ -215,7 +220,7 @@ async def add_timer_for_webinar_reminders(bot: Bot, callback: CallbackQuery, rem
         )
 
 
-async def send_webinar_reminder(bot: Bot, callback: CallbackQuery, reminder_index : int):
+async def send_webinar_reminder(bot: Bot, callback: CallbackQuery, reminder_index: int):
     # if
     text = await rq.get_webinar_reminder_text(reminder_index)
     if text is None:
@@ -227,7 +232,8 @@ async def send_webinar_reminder(bot: Bot, callback: CallbackQuery, reminder_inde
     image_file = get_photo_from_database(message_info)
 
     if reminder_index == 10:
-        await bot.send_video_note(callback.message.chat.id,video_note=FSInputFile("assets/videos/webinar_video_note.mp4"))
+        await bot.send_video_note(callback.message.chat.id,
+                                  video_note=FSInputFile("assets/videos/webinar_video_note.mp4"))
     if message_info.image:
         await send_message_with_photo(bot,
                                       callback.message.chat.id,
@@ -244,31 +250,25 @@ async def send_webinar_reminder(bot: Bot, callback: CallbackQuery, reminder_inde
     if await rq.get_webinar_reminder_text(reminder_index + 1) is None:
         if not await rq.get_user_flag_1(callback.from_user.id):
             scheduler.add_job(send_question_1_message,
-                              run_date=datetime.now() + timedelta(seconds=10),  # 10 minutes
+                              run_date=datetime.now() + timedelta(seconds=timings.QUESTION_MESSAGE_1_TIME),  # 10 minutes
                               args=[bot, callback.message])
         else:  # not sending question about the webinar appearance 2nd time
             await add_timer_for_first_offer(bot, callback, 1)
 
         return
 
-    # There is a warning:
-    # D:\ProgrammingProjects\PythonBots\NUTRABot\app\utils.py:244:
-    # RuntimeWarning: coroutine 'get_user_webinar_time' was never awaited
-    # await add_timer_for_webinar_reminders(bot, callback, reminder_index + 1)
-    # Dont know whats wrong
-    #
     await add_timer_for_webinar_reminders(bot, callback, reminder_index + 1)
 
 
-async def set_flag_1(user_id : int):
+async def set_flag_1(user_id: int):
     await rq.set_user_flag_1(user_id)
 
 
-async def set_flag_2(user_id : int):
+async def set_flag_2(user_id: int):
     await rq.set_user_flag_2(user_id)
 
 
-async def send_question_1_message(bot: Bot, message : Message):
+async def send_question_1_message(bot: Bot, message: Message):
     user_id = message.chat.id
     await set_flag_1(user_id)
     await bot.send_photo(chat_id=user_id,
@@ -277,13 +277,12 @@ async def send_question_1_message(bot: Bot, message : Message):
                          reply_markup=gkb.question_1_keyboard,
                          parse_mode=ParseMode.HTML)
 
-
     scheduler.add_job(restart_webinar_messages,
-                      run_date= datetime.now() + timedelta(seconds=20), # 120 minutes
-                      args = [message, bot])
+                      run_date=datetime.now() + timedelta(timings.RESTART_WEBINAR_MESSAGES_TIME),  # 120 minutes
+                      args=[message, bot])
 
 
-async def restart_webinar_messages(message : Message, bot : Bot):
+async def restart_webinar_messages(message: Message, bot: Bot):
     scheduler.remove_all_jobs()
     user_id = message.chat.id
 
@@ -291,7 +290,7 @@ async def restart_webinar_messages(message : Message, bot : Bot):
     # await set_flag_1(callback.from_user.id)
     # Re-expires the buttons, also needed for setting 19:00 by default (if user doesn't choose anything)
     await rq.reset_webinar_date_time(user_id)
-    await app.utils.send_lesson_message(3, message= message, bot=bot)
+    await app.utils.send_lesson_message(3, message=message, bot=bot)
 
 
 async def send_first_offer_message(bot: Bot, callback: CallbackQuery, order_index):
@@ -301,7 +300,6 @@ async def send_first_offer_message(bot: Bot, callback: CallbackQuery, order_inde
         return
 
     message_info = await rq.get_first_offer_info(order_index)
-
 
     if message_info.image:
         photo = get_photo_from_database(message_info)
@@ -320,13 +318,12 @@ async def send_first_offer_message(bot: Bot, callback: CallbackQuery, order_inde
     if await rq.get_first_offer_text(order_index + 1) is None:
         if not await rq.get_user_flag_2(callback.from_user.id):
             scheduler.add_job(send_question_2_message,
-                              run_date=datetime.now() + timedelta(seconds=10),  # 7 days
+                              run_date=datetime.now() + timedelta(seconds=timings.QUESTION_MESSAGE_2_TIME),  # 7 days
                               args=[bot, callback.message])
             # await rq.set_user_flag_2(callback.from_user.id)
             # done at another place - right after the choice in question 2
         else:  # not sending question about the webinar appearance 2nd time
-            #TODO await scheduler.add
-             await send_final_offer_message(bot, callback, 1)
+            await add_timer_for_final_offer(bot, callback, 1)
 
         return
 
@@ -344,7 +341,7 @@ async def add_timer_for_first_offer(bot: Bot, callback: CallbackQuery, reminder_
     )
 
 
-async def send_question_2_message(bot: Bot, message : Message) -> None:
+async def send_question_2_message(bot: Bot, message: Message) -> None:
     user_id = message.chat.id
     await set_flag_2(user_id)
     await bot.send_message(chat_id=user_id,
@@ -353,8 +350,9 @@ async def send_question_2_message(bot: Bot, message : Message) -> None:
                            parse_mode=ParseMode.HTML)
 
     scheduler.add_job(restart_webinar_messages,
-                      run_date= datetime.now() + timedelta(seconds=20), # 120 minutes
-                      args = [message, bot])
+                      run_date=datetime.now() + timedelta(seconds=timings.RESTART_WEBINAR_MESSAGES_TIME),  # 120 minutes
+                      args=[message, bot])
+
 
 async def send_final_offer_message(bot: Bot, callback: CallbackQuery, order_index):
     text = await rq.get_final_offer_text(order_index)
@@ -375,7 +373,7 @@ async def send_final_offer_message(bot: Bot, callback: CallbackQuery, order_inde
         await bot.send_message(chat_id=callback.message.chat.id,
                                text=text,
                                reply_markup=get_keyboard_from_database(message_info),
-                           parse_mode=ParseMode.HTML
+                               parse_mode=ParseMode.HTML
                                )
 
     if await rq.get_final_offer_text(order_index + 1) is None:
@@ -440,13 +438,13 @@ async def send_message_with_photo(bot, chat_id, photo, text, mes_keyboard):
         await bot.send_message(chat_id=chat_id,
                                text=text,
                                reply_markup=mes_keyboard,
-                           parse_mode=ParseMode.HTML)
+                               parse_mode=ParseMode.HTML)
     else:
         await bot.send_photo(chat_id=chat_id,
                              photo=photo,
                              caption=text,
                              reply_markup=mes_keyboard,
-                           parse_mode=ParseMode.HTML)
+                             parse_mode=ParseMode.HTML)
 
 
 def read_file_as_binary(path: str) -> bytes | None:

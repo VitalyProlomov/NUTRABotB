@@ -107,7 +107,7 @@ async def set_webinar_time_date(callback: CallbackQuery, bot : Bot):
     user_tg_id = callback.from_user.id
     webinar_date = await rq.get_user_webinar_date(user_tg_id)
 
-    if callback.from_user.first_name != "Fake_User_Callback" or callback.from_user.last_name != "Scheduled" is None:
+    if callback.from_user.first_name != "Fake_User_Callback" or callback.from_user.last_name != "Scheduled":
         await rq.add_choose_time_himself_metric(user_tg_id)
 
     if webinar_date is not None and utils.did_webinar_date_come(webinar_date):
@@ -184,10 +184,11 @@ async def continue_with_final_selling_offer(callback: CallbackQuery, bot : Bot):
 
     # I am setting it in send_question_1_message
     # await set_flag_1(callback.from_user.id)
+
     await rq.reset_webinar_date_time(callback.from_user.id)
 
     # Sends all the offers again
-    await utils.send_first_offer_message(bot, callback, 1)
+    await utils.send_final_offer_message(bot, callback, 1)
 
 
 
@@ -199,7 +200,7 @@ async def continue_with_final_selling_offer(callback: CallbackQuery, bot : Bot):
 #                             reply_markup=gkb.lesson_1_keyboard)
 #     await app.utils.add_timer_for_lessons_message(1, message, bot)
 
-    #TODO sssaaa
+
 # @router1.message(F.text == 'Изменить исходные дожимающие сообщения')
 # async def change_selling_messages_texts(message: Message, bot: Bot):
 
