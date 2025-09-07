@@ -131,7 +131,24 @@ async def countUsers(message: Message, state: FSMContext):
 @admin_router.message(F.text == "Метрики")
 async def show_metrics(message: Message, state: FSMContext):
     await state.clear()
-    iomkl;
+    users = (await rq.get_all_users_ids()).all()
+
+    lesson1 = await rq.count_users_who_did_press_lesson_himself_metric(1)
+    lesson2 = await rq.count_users_who_did_press_lesson_himself_metric(2)
+    lesson3 = await rq.count_users_who_did_press_lesson_himself_metric(3)
+    # TODO: questions
+    await message.answer(f'''Метрики:
+    - Всего пользователей: {len(users)}
+    -----------------
+    - Пользователей, получивших 1 вопрос: {await rq.count_users_who_got_flag(1)}
+    - Пользователей, получивших 2 вопрос: {await rq.count_users_who_got_flag(2)}
+    -----------------
+    - Пользователей, перешедших на 1 урок по кнопке: {lesson1}
+    - Пользователей, перешедших на 2 урок по кнопке: {lesson2}
+    - Пользователей, перешедших на 3 урок по кнопке: {lesson3}
+    -----------------
+    ''')
+
 
     # @admin_router.callback_query(F.data == "selling_message_1_option",
 #                              States.ChangingSellingMessagesState.waiting_for_message_order_choice)

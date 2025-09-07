@@ -98,6 +98,8 @@ async def print_greet_message(message: Message, bot: Bot):
 async def send_lesson_message_from_button_click(callback: CallbackQuery, bot : Bot):
     index = callback.data.split("_")[-1]
     scheduler.remove_all_jobs()
+    user_tg_id = callback.message.chat.id
+    await rq.add_did_press_lesson_himself_metric(tg_id=user_tg_id, lesson_index=int(index))
     await utils.send_lesson_message(int(index), message=callback.message, bot=bot)
 
 

@@ -20,8 +20,5 @@ selling_message_options_keyboard = InlineKeyboardMarkup(
     ]
 )
 
-# confirm_changing_selling_message_keyboard = ReplyKeyboardMarkup(keyboard=[
-#     [KeyboardButton(text="Подтвердить ✅")],
-#     [KeyboardButton(text="Отмена ❌")],
-# ])
+
 

@@ -1,16 +1,14 @@
-import json
 import string
 from datetime import timedelta, datetime
 
 from aiogram.types import Message
 from sqlalchemy.exc import NoResultFound
 
-import app.keyboards.general_keyboards as gkb
 import texts
 import timings
 from app import utils
 from app.database.models import *
-from sqlalchemy import select, delete, literal
+from sqlalchemy import select, delete
 from zoneinfo import ZoneInfo
 
 from texts import MINI_COURSE_LINK, CARE_CENTER_LINK, BODY_UP_LINK, WEBINAR_LINK, QUIZ_LINK, LESSON_1_LINK, \
@@ -574,3 +572,55 @@ async def add_choose_time_himself_metric(tg_id : int):
             session.commit()
         else:
             session.add(UserMetrics(tg_id=tg_id,did_choose_time_himself=True))
+            session.commit()
+
+async def add_did_press_lesson_himself_metric(tg_id : int, lesson_index : int):
+    async with async_session() as session:
+        res = await session.execute(select(UserMetrics).where(UserMetrics.tg_id == tg_id))
+        user_metric = res.scalar_one_or_none()
+        if user_metric:
+            if lesson_index == 1:
+                user_metric.did_press_next_lesson_1 = True
+            elif lesson_index == 2:
+                user_metric.did_press_next_lesson_2 = True
+            elif lesson_index == 3:
+                user_metric.did_press_next_lesson_3 = True
+            session.commit()
+        else:
+            if lesson_index == 1:
+                session.add(UserMetrics(tg_id=tg_id, did_press_next_lesson_1=True))
+            elif lesson_index == 2:
+                session.add(UserMetrics(tg_id=tg_id,did_press_next_lesson_2=True))
+            elif lesson_index == 3:
+                session.add(UserMetrics(tg_id=tg_id,did_press_next_lesson_3=True))
+
+            session.commit()
+
+
+async def count_users_who_did_press_lesson_himself_metric(lesson_index : int):
+    async with async_session() as session:
+        res = 0
+
+        if lesson_index == 1:
+            res = await session.execute(select(UserMetrics).where(UserMetrics.did_press_next_lesson_1 == True))
+
+        if lesson_index == 2:
+            res = await session.execute(select(UserMetrics).where(UserMetrics.did_press_next_lesson_2 == True))
+
+        if lesson_index == 3:
+            res = await session.execute(select(UserMetrics).where(UserMetrics.did_press_next_lesson_3 == True))
+        count  = (res.scalars().all())
+        return count
+
+
+async def count_users_who_got_flag(flag_index: int):
+    async with async_session() as session:
+        res = []
+        if flag_index == 1:
+            res = await session.execute(select(User).where(User.first_flag == True))
+
+        if flag_index == 2:
+            res = await session.execute(select(User).where(User.second_flag == True))
+        count  = (res.scalars().all())
+        return count
+
