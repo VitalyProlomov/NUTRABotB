@@ -4,6 +4,7 @@ import logging
 
 from aiogram import Bot, Dispatcher
 
+import app.utils
 from config import TOKEN
 from app.routers.user_router import router1
 from app.routers.admin_router import admin_router
@@ -51,12 +52,14 @@ async def main():
     scheduler.start()
 
     #TODO
-    # await app.utils.sendButtonMessageToChannel(bot)
+    #await app.utils.send_button_message_to_channel(bot, "BUTTON TEXT")
 
     await dp.start_polling(bot, on_startup = on_startup)
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
+                        # ,filename='logs.txt',
+                        # filemode='a')
     try :
         asyncio.run(main())
     except KeyboardInterrupt:

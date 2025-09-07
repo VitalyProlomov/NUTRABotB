@@ -128,9 +128,12 @@ async def countUsers(message: Message, state: FSMContext):
     users = (await rq.get_all_users_ids()).all()
     await message.answer(f'Всего вашим ботом воспользовались: {len(users)}')
 
+@admin_router.message(F.text == "Метрики")
+async def show_metrics(message: Message, state: FSMContext):
+    await state.clear()
+    iomkl;
 
-
-# @admin_router.callback_query(F.data == "selling_message_1_option",
+    # @admin_router.callback_query(F.data == "selling_message_1_option",
 #                              States.ChangingSellingMessagesState.waiting_for_message_order_choice)
 # async def process_changing_selling_message_1_option(callback: CallbackQuery, state: FSMContext, bot : Bot):
 #     await process_changing_selling_message(option_ind=1, state=state, bot=bot, chat_id=callback.from_user.id)
