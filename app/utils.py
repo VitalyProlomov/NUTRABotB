@@ -120,9 +120,9 @@ async def send_webinar_time_choice_reminder(bot: Bot, message: Message):
     chat_id: int = message.chat.id
     now = datetime.now(MOSCOW_TZ)
 
-    today_2359 = datetime.combine(
+    today_2359 : datetime = datetime.combine(
         now.date(),  # Today's date
-        time(0, 16 ),  # 23:59 time
+        time(23, 59 ),  # 23:59 time
         tzinfo=MOSCOW_TZ  # Moscow timezone
     )
 
@@ -143,7 +143,7 @@ async def send_webinar_time_choice_reminder(bot: Bot, message: Message):
     scheduler.add_job(
         app.routers.user_router.set_webinar_time_date,
         'date',
-        run_date=today_2359,
+        next_run_time=today_2359,
         id="today_2359_auto_register",
         args=[callback_query, bot]
     )
@@ -193,7 +193,7 @@ async def add_timer_for_webinar_reminders(bot: Bot, callback: CallbackQuery, rem
         # start_time = now + timedelta(seconds=10) # test line
 
         start_time = datetime.combine(
-            now.date(), # + timedelta(days=1),  # Next day
+            now.date() + timedelta(days=1),  # Next day
             time(hour=6, minute=0),  # At 06:00
             tzinfo=MOSCOW_TZ
         )
@@ -205,7 +205,7 @@ async def add_timer_for_webinar_reminders(bot: Bot, callback: CallbackQuery, rem
         scheduler.add_job(
             send_webinar_reminder,
             'date',
-            run_date=start_time,
+            next_run_time=start_time,
             args=[bot, callback, reminder_index],
             # id=f"nextday9am_{chat_id}_{tomorrow_9am.timestamp()}"
         )
@@ -215,7 +215,7 @@ async def add_timer_for_webinar_reminders(bot: Bot, callback: CallbackQuery, rem
         scheduler.add_job(
             send_webinar_reminder,
             'date',
-            run_date=datetime.now() + timedelta(seconds=delay),
+            next_run_time=datetime.now() + timedelta(seconds=delay),
             args=[bot, callback, reminder_index],
         )
 
