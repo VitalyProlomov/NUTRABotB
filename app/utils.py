@@ -122,7 +122,7 @@ async def send_webinar_time_choice_reminder(bot: Bot, message: Message):
 
     today_2359 : datetime = datetime.combine(
         now.date(),  # Today's date
-        time(23, 59 ),  # 23:59 time
+        time(0, 34 ),  # 23:59 time
         tzinfo=MOSCOW_TZ  # Moscow timezone
     )
 
@@ -193,12 +193,12 @@ async def add_timer_for_webinar_reminders(bot: Bot, callback: CallbackQuery, rem
         # start_time = now + timedelta(seconds=10) # test line
 
         start_time = datetime.combine(
-            now.date() + timedelta(days=1),  # Next day
-            time(hour=6, minute=0),  # At 06:00
+            now.date(), # + timedelta(days=1),  # Next day
+            time(hour=0, minute=35),  # At 06:00
             tzinfo=MOSCOW_TZ
         )
-        if time_chosen == "19:00":
-            start_time += timedelta(hours=19 - 12)  # ? hours - need to check, prob 7
+        if time_chosen == "19:00": # TODO CHAGE to hours
+            start_time += timedelta(seconds=19 - 12)  # ? hours - need to check, prob 7
 
         scheduler.remove_all_jobs()
 
