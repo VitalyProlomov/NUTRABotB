@@ -64,10 +64,11 @@ async def add_timer_for_lessons_message(lesson_mes_order: int, message: Message,
 
     # selling_message = await rq.get_lesson_message_info(selling_mes_order)
 
+    delay_seconds = lesson_message.delay_time_minutes * 60
     add_job_by_delay(send_lesson_message,
-                     delay_seconds=lesson_message.delay_time_minutes,
+                     delay_seconds= delay_seconds,
                      args=[lesson_mes_order, message, bot],
-                     user_tg_id=message.chat.id, )
+                     user_tg_id=message.chat.id)
 
 
 # The message is the one, that bot writes, so it is important to use chat_id when sending the selling message,
@@ -264,8 +265,9 @@ async def send_webinar_reminder(bot: Bot, callback: CallbackQuery, reminder_inde
 
     if await rq.get_webinar_reminder_text(reminder_index + 1) is None:
         if not await rq.get_user_flag_1(callback.from_user.id):
+            delay_seconds = timings.QUESTION_MESSAGE_1_TIME * 60
             add_job_by_delay(send_question_1_message,
-                             delay_seconds=timings.QUESTION_MESSAGE_1_TIME,  # 10 minutes
+                             delay_seconds=delay_seconds,  # 10 minutes
                              args=[bot, callback.message],
                              user_tg_id=callback.from_user.id
                              )

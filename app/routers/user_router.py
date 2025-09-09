@@ -13,6 +13,7 @@ import app.database.requests as rq
 import config
 from app import utils
 from app.middlewares import TestMiddleWare
+from app.utils import remove_all_user_jobs
 from texts import SUBSCRIPTION_NEEDED_MESSAGE, WELCOME_MESSAGE, GREETINGS_SUBSCRIBED_MESSAGE
 
 scheduler = utils.scheduler
@@ -61,6 +62,8 @@ async def cmd_start(message: Message, bot: Bot):
 
 @router1.message(Command('restart'))
 async def restart(message: Message, bot: Bot):
+    remove_all_user_jobs(message.chat.id)
+
     if await rq.does_user_exist(message.chat.id):
         res = await rq.remove_user(message.chat.id)
 
