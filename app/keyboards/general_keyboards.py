@@ -2,9 +2,13 @@ from aiogram.types import (InlineKeyboardMarkup, InlineKeyboardButton)
 
 from config import CHANNEL_NAME
 
-subscription_key_board = InlineKeyboardMarkup(inline_keyboard=[
+subscription_keyboard = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Подписаться', url=f'https://t.me/{CHANNEL_NAME[1:]}')],
     [InlineKeyboardButton(text='Готово', callback_data='check_subscription')]
+])
+
+simple_subscription_keyboard = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='Подписаться', url=f'https://t.me/{CHANNEL_NAME[1:]}')],
 ])
 
 webinar_time_choice_keyboard = InlineKeyboardMarkup(inline_keyboard=[
@@ -16,11 +20,11 @@ lesson_1_keyboard = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Перейти к уроку 1', callback_data="next_lesson_1")],
 ])
 
-mark_purchase_key_board = InlineKeyboardMarkup(inline_keyboard=[
+mark_purchase_keyboard = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Уже купил(а)', callback_data='mark_purchase')],
 ])
 
-channel_link_key_board = InlineKeyboardMarkup(inline_keyboard=[
+channel_link_keyboard = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text="Click Me!", url="https://example.com")]
 ])
 

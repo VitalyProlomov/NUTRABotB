@@ -154,7 +154,7 @@ async def send_button_message_to_channel(bot: Bot, text: string):
     await bot.send_message(
         chat_id=config.CHANNEL_ID,
         text=text,
-        reply_markup=gkb.channel_link_key_board,
+        reply_markup=gkb.channel_link_keyboard,
         parse_mode=ParseMode.HTML  # Optional: Supports Markdown/HTML formatting
     )
 
@@ -169,7 +169,7 @@ async def add_subscription_reminder(bot: Bot, message):
 async def send_subscription_reminder(bot: Bot, index: int, message: Message):
     if index == 1:
         await bot.send_message(chat_id=message.chat.id, text=texts.SUBSCRIPTION_REMINDER_1,
-                               reply_markup=gkb.subscription_key_board,
+                               reply_markup=gkb.lesson_1_keyboard,
                                parse_mode=ParseMode.HTML)
         scheduler.add_job(send_subscription_reminder,
                           trigger='date',
@@ -178,8 +178,13 @@ async def send_subscription_reminder(bot: Bot, index: int, message: Message):
         return
     if index == 2:
         await bot.send_message(chat_id=message.chat.id, text=texts.SUBSCRIPTION_REMINDER_2,
-                               reply_markup=gkb.subscription_key_board,
+                               reply_markup=gkb.lesson_1_keyboard,
                                parse_mode=ParseMode.HTML)
+        scheduler.add_job(send_lesson_message,
+                          trigger='date',
+                          run_date=datetime.now() + timedelta(seconds=timings.LESSON_MESSAGE_1_AUTO_TIME),
+                          args=(bot, 1, message))
+
 
 
 async def add_timer_for_webinar_reminders(bot: Bot, callback: CallbackQuery, reminder_index: int):
@@ -221,7 +226,6 @@ async def add_timer_for_webinar_reminders(bot: Bot, callback: CallbackQuery, rem
 
 
 async def send_webinar_reminder(bot: Bot, callback: CallbackQuery, reminder_index: int):
-    # if
     text = await rq.get_webinar_reminder_text(reminder_index)
     if text is None:
         print("got None from get_webinar_reminder (Must be out of index for webinar messages)")

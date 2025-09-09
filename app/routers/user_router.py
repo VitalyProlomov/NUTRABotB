@@ -51,12 +51,12 @@ async def cmd_start(message: Message, bot: Bot):
 
     await bot.send_video_note(message.chat.id, video_note=FSInputFile("assets/videos/welcome_video_note.mp4"))
 
-    if not await app.utils.check_user_subscription(message.from_user.id, bot):
-        await message.answer(WELCOME_MESSAGE,
-                         reply_markup=gkb.subscription_key_board,
-                         parse_mode=ParseMode.HTML)
-        await app.utils.add_subscription_reminder(bot, message)
-        return #must be in the if statement
+    #if not await app.utils.check_user_subscription(message.from_user.id, bot):
+    await message.answer(WELCOME_MESSAGE,
+                     reply_markup=gkb.lesson_1_keyboard,
+                     parse_mode=ParseMode.HTML)
+    await app.utils.add_subscription_reminder(bot, message)
+       # return #must be in the if statement
 
     # these must be if subscription check is necessary
     await print_greet_message(message, bot)
@@ -136,7 +136,7 @@ async def check_subscription(callback: CallbackQuery, bot: Bot):
     if not await app.utils.check_user_subscription(callback.from_user.id, bot):
         await bot.send_message(callback.message.chat.id, SUBSCRIPTION_NEEDED_MESSAGE,
                            parse_mode=ParseMode.HTML,
-                               reply_markup=gkb.subscription_key_board)
+                               reply_markup=gkb.lesson_1_keyboard)
         return False
     else:
         await print_greet_message(callback.message, bot)
