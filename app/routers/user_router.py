@@ -13,7 +13,6 @@ import app.database.requests as rq
 import config
 from app import utils
 from app.middlewares import TestMiddleWare
-from app.utils import remove_all_user_jobs
 from texts import SUBSCRIPTION_NEEDED_MESSAGE, WELCOME_MESSAGE, GREETINGS_SUBSCRIBED_MESSAGE
 
 scheduler = utils.scheduler
@@ -62,17 +61,17 @@ async def cmd_start(message: Message, bot: Bot):
 
 @router1.message(Command('restart'))
 async def restart(message: Message, bot: Bot):
-    remove_all_user_jobs(message.chat.id)
+    app.utils.remove_all_user_jobs(message.chat.id)
 
     if await rq.does_user_exist(message.chat.id):
         res = await rq.remove_user(message.chat.id)
 
         if res:
-            await cmd_start(message, bot)
+            await app.routers.user_router.cmd_start(message, bot)
         else:
             await bot.send_message(message.chat.id, "Cannot restart currently")
     else:
-        await cmd_start(message, bot)
+        await app.routers.user_router.cmd_start(message, bot)
 
 async def print_greet_message(message: Message, bot: Bot):
     image_path = Path("assets/images/1.jpg")
