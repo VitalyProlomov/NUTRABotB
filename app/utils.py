@@ -20,6 +20,7 @@ import config
 import app.keyboards.general_keyboards as gkb
 import app.database.requests as rq
 import timings
+
 scheduler = AsyncIOScheduler()
 MOSCOW_TZ = ZoneInfo("Europe/Moscow")
 
@@ -64,9 +65,9 @@ async def add_timer_for_lessons_message(lesson_mes_order: int, message: Message,
     # selling_message = await rq.get_lesson_message_info(selling_mes_order)
 
     add_job_by_delay(send_lesson_message,
-                      delay_seconds = lesson_message.delay_time_minutes,
-                      args=[lesson_mes_order, message, bot],
-                      user_tg_id=message.chat.id,)
+                     delay_seconds=lesson_message.delay_time_minutes,
+                     args=[lesson_mes_order, message, bot],
+                     user_tg_id=message.chat.id, )
 
 
 # The message is the one, that bot writes, so it is important to use chat_id when sending the selling message,
@@ -87,6 +88,8 @@ async def send_lesson_message(lesson_message_order: int, message: Message, bot: 
                 # If buttons are stored as JSON string:
                 if isinstance(lesson_info.buttons, str):
                     buttons_data = json.loads(lesson_info.buttons)
+                    # Need to test before uncommenting and releasing
+                    # reply_markup = InlineKeyboardMarkup(inline_keyboard=buttons_data["inline_keyboard"])
                 else:  # If already a dict (SQLAlchemy JSON type)
                     buttons_data = lesson_info.buttons
 
@@ -106,9 +109,10 @@ async def send_lesson_message(lesson_message_order: int, message: Message, bot: 
 
 
 async def add_timer_for_webinar_time_choice_reminder(bot: Bot, message):
+    delay_seconds = timings.WEBINAR_REMINDER_0_AUTO_TIME * 60
     add_job_by_delay(send_webinar_time_choice_reminder,
-                     delay_seconds=timings.WEBINAR_REMINDER_0_AUTO_TIME,
-                      args=[bot, message],
+                     delay_seconds=delay_seconds,
+                     args=[bot, message],
                      user_tg_id=message.chat.id)
 
 
@@ -121,9 +125,9 @@ async def send_webinar_time_choice_reminder(bot: Bot, message: Message):
     chat_id: int = message.chat.id
     now = datetime.now(MOSCOW_TZ)
 
-    today_2359 : datetime = datetime.combine(
+    today_2359: datetime = datetime.combine(
         now.date(),  # Today's date
-        time(18, 53),  # 23:59 time
+        time(23, 59),  # 23:59 time
         tzinfo=MOSCOW_TZ  # Moscow timezone
     )
 
@@ -143,7 +147,7 @@ async def send_webinar_time_choice_reminder(bot: Bot, message: Message):
     # Schedule the job
     add_job_by_date(
         app.routers.user_router.set_webinar_time_date,
-        date_time = today_2359,
+        date_time=today_2359,
         args=[callback_query, bot],
         user_tg_id=message.chat.id,
     )
@@ -160,9 +164,10 @@ async def send_button_message_to_channel(bot: Bot, text: string):
 
 
 async def add_subscription_reminder(bot: Bot, message):
+    delay_seconds = timings.SUBSCRIPTION_REMINDER_1_TIME * 60
     add_job_by_delay(send_subscription_reminder,
-                     delay_seconds=timings.SUBSCRIPTION_REMINDER_1_TIME,
-                      args=(bot, 1, message),
+                     delay_seconds=delay_seconds,
+                     args=(bot, 1, message),
                      user_tg_id=message.chat.id)
 
 
@@ -171,26 +176,28 @@ async def send_subscription_reminder(bot: Bot, index: int, message: Message):
         await bot.send_message(chat_id=message.chat.id, text=texts.SUBSCRIPTION_REMINDER_1,
                                reply_markup=gkb.lesson_1_keyboard,
                                parse_mode=ParseMode.HTML)
+        delay_seconds = timings.SUBSCRIPTION_REMINDER_2_TIME * 60
         add_job_by_delay(send_subscription_reminder,
-                         delay_seconds=timings.SUBSCRIPTION_REMINDER_2_TIME,
-                          args=(bot, 2, message),
+                         delay_seconds=delay_seconds,
+                         args=(bot, 2, message),
                          user_tg_id=message.chat.id)
         return
     if index == 2:
         await bot.send_message(chat_id=message.chat.id, text=texts.SUBSCRIPTION_REMINDER_2,
                                reply_markup=gkb.lesson_1_keyboard,
                                parse_mode=ParseMode.HTML)
+        delay_seconds = await rq.get_lesson_message_info(1)
+        delay_seconds = delay_seconds.delay_time_minutes * 60
         add_job_by_delay(send_lesson_message,
-                          delay_seconds=timings.LESSON_MESSAGE_1_AUTO_TIME,
-                          args=(1, message, bot),
+                         delay_seconds=delay_seconds,
+                         args=(1, message, bot),
                          user_tg_id=message.chat.id)
-
 
 
 async def add_timer_for_webinar_reminders(bot: Bot, callback: CallbackQuery, reminder_index: int):
     # set the date of message for tomorrow
     if reminder_index == 2:
-        time_chosen = await rq.get_user_webinar_time(callback.from_user.id)  # await  ?
+        time_chosen = await rq.get_user_webinar_time(callback.from_user.id)
         if time_chosen is None:
             time_chosen = "19:00"
 
@@ -198,12 +205,16 @@ async def add_timer_for_webinar_reminders(bot: Bot, callback: CallbackQuery, rem
         # start_time = now + timedelta(seconds=10) # test line
 
         start_time = datetime.combine(
-            now.date(), # + timedelta(days=1),  # Next day
-            time(hour=18, minute=54),  # At 06:00
+            now.date() + timedelta(days=1),  # Next day
+            time(hour=6, minute=0),  # At 06:00
             tzinfo=MOSCOW_TZ
         )
-        if time_chosen == "19:00": # TODO CHANGE to hours
-            start_time += timedelta(seconds=19 - 12)  # ? hours - need to check, prob 7
+        if time_chosen == "19:00":  # TO DO CHANGE to hours
+            start_time = datetime.combine(
+                now.date() + timedelta(days=1),  # Next day
+                time(hour=19 - 6, minute=0),  # At 13:00 - 6 hours before the webinar
+                tzinfo=MOSCOW_TZ
+            )
 
         remove_all_user_jobs(callback.from_user.id)
 
@@ -216,10 +227,10 @@ async def add_timer_for_webinar_reminders(bot: Bot, callback: CallbackQuery, rem
         )
     else:
         delay = await rq.get_webinar_reminder_info(reminder_index)
-        delay_seconds = delay.delay_time_minutes # * 60
+        delay_seconds = delay.delay_time_minutes * 60
         add_job_by_delay(
             send_webinar_reminder,
-            delay_seconds= delay_seconds,
+            delay_seconds=delay_seconds,
             args=[bot, callback, reminder_index],
             user_tg_id=callback.from_user.id
         )
@@ -239,11 +250,11 @@ async def send_webinar_reminder(bot: Bot, callback: CallbackQuery, reminder_inde
         await bot.send_video_note(callback.from_user.id,
                                   video_note=FSInputFile("assets/videos/webinar_video_note.mp4"))
     if message_info.image:
-        await send_message_with_photo(bot,
-                                      callback.from_user.id,
-                                      image_file,
-                                      text,
-                                      get_keyboard_from_database(message_info))
+        await send_message_with_photo(bot=bot,
+                                      chat_id=callback.from_user.id,
+                                      photo=image_file,
+                                      text=text,
+                                      mes_keyboard = get_keyboard_from_database(message_info))
     else:
         await bot.send_message(chat_id=callback.from_user.id,
                                text=text,
@@ -254,10 +265,10 @@ async def send_webinar_reminder(bot: Bot, callback: CallbackQuery, reminder_inde
     if await rq.get_webinar_reminder_text(reminder_index + 1) is None:
         if not await rq.get_user_flag_1(callback.from_user.id):
             add_job_by_delay(send_question_1_message,
-                              delay_seconds=timings.QUESTION_MESSAGE_1_TIME,  # 10 minutes
-                              args=[bot, callback.message],
+                             delay_seconds=timings.QUESTION_MESSAGE_1_TIME,  # 10 minutes
+                             args=[bot, callback.message],
                              user_tg_id=callback.from_user.id
-            )
+                             )
         else:  # not sending question about the webinar appearance 2nd time
             await add_timer_for_first_offer(bot, callback, 1)
 
@@ -283,9 +294,10 @@ async def send_question_1_message(bot: Bot, message: Message):
                          reply_markup=gkb.question_1_keyboard,
                          parse_mode=ParseMode.HTML)
 
+    delay_seconds = timings.RESTART_WEBINAR_MESSAGES_TIME * 60
     add_job_by_delay(restart_webinar_messages,
-                      delay_seconds=timings.RESTART_WEBINAR_MESSAGES_TIME,  # 120 minutes
-                      args=[message, bot],
+                     delay_seconds=delay_seconds,
+                     args=[message, bot],
                      user_tg_id=message.chat.id)
 
 
@@ -324,9 +336,10 @@ async def send_first_offer_message(bot: Bot, callback: CallbackQuery, order_inde
 
     if await rq.get_first_offer_text(order_index + 1) is None:
         if not await rq.get_user_flag_2(callback.from_user.id):
+            delay_seconds = timings.QUESTION_MESSAGE_2_TIME * 60
             add_job_by_delay(send_question_2_message,
-                              delay_seconds=timings.QUESTION_MESSAGE_2_TIME,  # 7 days
-                              args=[bot, callback.message],
+                             delay_seconds=delay_seconds,  # 7 days
+                             args=[bot, callback.message],
                              user_tg_id=callback.from_user.id)
             # await rq.set_user_flag_2(callback.from_user.id)
             # done at another place - right after the choice in question 2
@@ -340,10 +353,10 @@ async def send_first_offer_message(bot: Bot, callback: CallbackQuery, order_inde
 
 async def add_timer_for_first_offer(bot: Bot, callback: CallbackQuery, reminder_index):
     delay = await rq.get_first_offer_info(reminder_index)
-    delay_seconds = delay.delay_time_minutes # * 60
+    delay_seconds = delay.delay_time_minutes * 60
     add_job_by_delay(
         send_first_offer_message,
-        delay_seconds= delay_seconds,
+        delay_seconds=delay_seconds,
         args=[bot, callback, reminder_index],
         user_tg_id=callback.from_user.id
     )
@@ -357,9 +370,10 @@ async def send_question_2_message(bot: Bot, message: Message) -> None:
                            reply_markup=gkb.question_2_keyboard,
                            parse_mode=ParseMode.HTML)
 
+    delay_seconds = timings.RESTART_WEBINAR_MESSAGES_TIME * 60
     add_job_by_delay(restart_webinar_messages,
-                      delay_seconds=timings.RESTART_WEBINAR_MESSAGES_TIME,  # 120 minutes
-                      args=[message, bot],
+                     delay_seconds=delay_seconds,
+                     args=[message, bot],
                      user_tg_id=message.chat.id)
 
 
@@ -394,11 +408,11 @@ async def send_final_offer_message(bot: Bot, callback: CallbackQuery, order_inde
 
 async def add_timer_for_final_offer(bot: Bot, callback: CallbackQuery, order_index):
     delay = await rq.get_final_offer_info(order_index)
-    delay_seconds = delay.delay_time_minutes # * 60
+    delay_seconds = delay.delay_time_minutes * 60
 
     add_job_by_delay(
         send_final_offer_message,
-        delay_seconds= delay_seconds,
+        delay_seconds=delay_seconds,
         args=[bot, callback, order_index],
         user_tg_id=callback.from_user.id
     )
@@ -487,7 +501,8 @@ def get_photo_from_database(row: Any):
         return None
     return jpg_file
 
-def add_job_by_delay(func : Any, delay_seconds : int, args : list | tuple, user_tg_id : int) -> Job:
+
+def add_job_by_delay(func: Any, delay_seconds: int, args: list | tuple, user_tg_id: int) -> Job:
     """
     Adds a job to scheduler and creates an id correlated to the user telegram id
     :param func: function that will be called
@@ -498,13 +513,14 @@ def add_job_by_delay(func : Any, delay_seconds : int, args : list | tuple, user_
     """
     # print ( f'{func.__name__}|{datetime.now().strftime('%d-%m-%Y_%H:%M:%S')}|{user_tg_id}')
     return scheduler.add_job(func=func,
-                      trigger='date',
-                      next_run_time=datetime.now() + timedelta(seconds=delay_seconds),
-                      args=args,
-                      id=f"{func.__name__}|{datetime.now().strftime('%d-%m-%Y_%H:%M:%S')}|{user_tg_id}",
-                      replace_existing=True)
+                             trigger='date',
+                             next_run_time=datetime.now() + timedelta(seconds=delay_seconds),
+                             args=args,
+                             id=f"{func.__name__}|{datetime.now().strftime('%d-%m-%Y_%H:%M:%S')}|{user_tg_id}",
+                             replace_existing=True)
 
-def add_job_by_date(func : Any, date_time : datetime, args : list | tuple, user_tg_id : int) -> Job:
+
+def add_job_by_date(func: Any, date_time: datetime, args: list | tuple, user_tg_id: int) -> Job:
     """
       Adds a job to scheduler and creates an id correlated to the user telegram id
       :param func: function that will be called
@@ -514,13 +530,14 @@ def add_job_by_date(func : Any, date_time : datetime, args : list | tuple, user_
       :return: Job
       """
     return scheduler.add_job(func=func,
-                      trigger='date',
-                      next_run_time= date_time,
-                      args=args,
-                      id=f"{func.__name__}|{datetime.now().strftime('%d-%m-%Y_%H:%M:%S')}|{user_tg_id}",
-                      replace_existing=True)
+                             trigger='date',
+                             next_run_time=date_time,
+                             args=args,
+                             id=f"{func.__name__}|{datetime.now().strftime('%d-%m-%Y_%H:%M:%S')}|{user_tg_id}",
+                             replace_existing=True)
 
-def remove_all_user_jobs(tg_id : int):
+
+def remove_all_user_jobs(tg_id: int):
     """
     Remove all jobs for a specific user
     :param tg_id: telegram id o the user whose jobs need to be removed
@@ -533,6 +550,7 @@ def remove_all_user_jobs(tg_id : int):
 
     for job_id in jobs_to_remove:
         scheduler.remove_job(job_id)
+
 
 def remove_job(job_id):
     scheduler.remove_job(job_id=job_id)

@@ -131,17 +131,22 @@ async def countUsers(message: Message, state: FSMContext):
 @admin_router.message(F.text == "Метрики")
 async def show_metrics(message: Message, state: FSMContext):
     await state.clear()
-    users = (await rq.get_all_users_ids()).all()
+    users = await rq.get_all_users_ids()
+    users_count = len(users.all())
+
 
     lesson1 = await rq.count_users_who_did_press_lesson_himself_metric(1)
     lesson2 = await rq.count_users_who_did_press_lesson_himself_metric(2)
     lesson3 = await rq.count_users_who_did_press_lesson_himself_metric(3)
-    # TODO: fix Nones nulls and test
+
+    flag_1_users = await rq.count_users_who_got_flag(1)
+    flag_2_users = await rq.count_users_who_got_flag(2)
+    # TO DO: fix Nones nulls and test
     await message.answer(f'''Метрики:
-    - Всего пользователей: {len(users)}
+    - Всего пользователей: {users_count}
     -----------------
-    - Пользователей, получивших 1 вопрос: {await rq.count_users_who_got_flag(1)}
-    - Пользователей, получивших 2 вопрос: {await rq.count_users_who_got_flag(2)}
+    - Пользователей, получивших 1 вопрос: {flag_1_users}
+    - Пользователей, получивших 2 вопрос: {flag_2_users}
     -----------------
     - Пользователей, перешедших на 1 урок по кнопке: {lesson1}
     - Пользователей, перешедших на 2 урок по кнопке: {lesson2}
@@ -189,7 +194,7 @@ async def show_metrics(message: Message, state: FSMContext):
 # async def change_message( message: Message, state: FSMContext, bot : Bot):
 #     data = await state.get_data()
 #     # try:
-#     #TODO ADD delay time from user
+#     #TO DO ADD delay time from user
 #     result = await rq.edit_selling_message(data['option_ind'], data['message'], 8)
 #     if result:
 #         await message.answer(f'Успешно изменили {data['option_ind']} дожимающее сообщение на:'

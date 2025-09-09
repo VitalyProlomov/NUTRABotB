@@ -234,7 +234,7 @@ async def initialize_broadcast_messages():
                 LessonMessages(
                     text=texts.LESSON_MESSAGE_3,
                     code_name="lesson3",
-                    order_of_sending=3, delay_time_minutes=timings.LESSON_MESSAGE_2_AUTO_TIME,
+                    order_of_sending=3, delay_time_minutes=timings.LESSON_MESSAGE_3_AUTO_TIME,
                     image=utils.read_file_as_binary(r"assets/images/lesson_3_photo.jpg"),
                     buttons={
                         "inline_keyboard": [
@@ -364,7 +364,7 @@ async def initialize_first_offer_messages():
         if result.scalars().first() is None:
             initial_messages = [
                 FirstOfferMessages(text=texts.FIRST_OFFER_MESSAGE_1,
-                                   order_of_sending=1, delay_time_minutes=timings.FIRST_OFFER_MESSAGE_1_TIME,  # 0 + кружок
+                                   order_of_sending=1, delay_time_minutes=timings.FIRST_OFFER_MESSAGE_1_TIME,  # + кружок
                                    image=utils.read_file_as_binary(
                                        r"assets/images/first_offer/first_offer_1_photo.jpg"),
                                    buttons={
@@ -377,7 +377,7 @@ async def initialize_first_offer_messages():
                                    }
                                    ),
                 FirstOfferMessages(text=texts.FIRST_OFFER_MESSAGE_2,
-                                   order_of_sending=2, delay_time_minutes=timings.FIRST_OFFER_MESSAGE_2_TIME,  # 26 * 60
+                                   order_of_sending=2, delay_time_minutes=timings.FIRST_OFFER_MESSAGE_2_TIME,
                                    image=utils.read_file_as_binary(
                                        r"assets/images/first_offer/first_offer_2_photo.jpg"),
                                    buttons={
@@ -389,7 +389,7 @@ async def initialize_first_offer_messages():
                                    }
                                    ),
                 FirstOfferMessages(text=texts.FIRST_OFFER_MESSAGE_3,
-                                   order_of_sending=3, delay_time_minutes=timings.FIRST_OFFER_MESSAGE_3_TIME,  # 24 * 60
+                                   order_of_sending=3, delay_time_minutes=timings.FIRST_OFFER_MESSAGE_3_TIME,
                                    image=utils.read_file_as_binary(
                                        r"assets/images/first_offer/first_offer_3_photo.jpg"),
                                    buttons={
@@ -610,7 +610,7 @@ async def count_users_who_did_press_lesson_himself_metric(lesson_index: int):
         if lesson_index == 3:
             res = await session.execute(select(UserMetrics).where(UserMetrics.did_press_next_lesson_3 == True))
         count = (res.scalars().all())
-        return count
+        return len(count)
 
 
 async def count_users_who_got_flag(flag_index: int):
@@ -622,4 +622,4 @@ async def count_users_who_got_flag(flag_index: int):
         if flag_index == 2:
             res = await session.execute(select(User).where(User.second_flag == True))
         count = (res.scalars().all())
-        return count
+        return len(count)
