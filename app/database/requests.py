@@ -1,4 +1,3 @@
-import string
 from datetime import timedelta, datetime
 
 from aiogram.types import Message
@@ -12,7 +11,7 @@ from sqlalchemy import select, delete
 from zoneinfo import ZoneInfo
 
 from texts import MINI_COURSE_LINK, CARE_CENTER_LINK, BODY_UP_LINK, WEBINAR_LINK, QUIZ_LINK, LESSON_1_LINK, \
-    LESSON_2_LINK
+    LESSON_2_LINK, CHANNEL_LINK
 
 MOSCOW_TZ = ZoneInfo("Europe/Moscow")
 
@@ -37,11 +36,13 @@ async def did_user_mark_purchase(tg_id) -> bool:
             return False
         return user.didMarkPurchase
 
+
 async def does_user_exist(tg_id: int) -> bool:
     async with async_session() as session:
         res = await session.execute(select(User).where(User.tg_id == tg_id))
         user = res.scalar()
         return user is not None
+
 
 async def remove_user(tg_id: int) -> bool:
     async with async_session() as session:
@@ -61,6 +62,7 @@ async def remove_user(tg_id: int) -> bool:
             session.rollback()
             print(f"Error deleting user with tg_id: {tg_id}: {e}")
             return False
+
 
 async def get_all_users_ids():
     async with async_session() as session:
@@ -198,31 +200,6 @@ async def get_lesson_message_info(selling_message_order: int):
         res = res.scalar_one_or_none()
         return res
 
-
-async def edit_selling_message(selling_message_order: int, new_text: string,
-                               delay_time_minutes: int):
-    '''
-    :param selling_message_order:
-    :param new_text:
-    :return: true if editing was successful, false - otherwise (example: didn`t find broadcast message with given selling_message_order)
-    '''
-    async with async_session() as session:
-        res = await session.execute(
-            select(LessonMessages).
-            where(LessonMessages.order_of_sending == selling_message_order)
-        )
-        res = res.scalar_one_or_none()
-        if res:
-            res.text = new_text
-            res.delay_time_minutes = delay_time_minutes
-            await session.commit()
-            return True
-        else:
-            return False
-
-
-# Add this to your existing models.py file (or create a new file for initialization)
-
 async def initialize_broadcast_messages():
     async with async_session() as session:
         # Check if any broadcast messages exist
@@ -283,21 +260,38 @@ async def initialize_webinar_messages():
                 WebinarMessages(text=texts.WEBINAR_REMINDER_1,
                                 order_of_sending=1, delay_time_minutes=0,
                                 buttons={
-                                    "inline_keyboard": [[{"text": "Пройти тест", "url": QUIZ_LINK}]]
+                                    "inline_keyboard": [[{"text": "Получить гайд",
+                                                          "url": QUIZ_LINK}],
+                                                        [{"text": "Подписаться на канал",
+                                                          "url": CHANNEL_LINK}]]
                                 }
                                 ),
                 WebinarMessages(text=texts.WEBINAR_REMINDER_2,
                                 order_of_sending=2, delay_time_minutes=0,
-                                image=utils.read_file_as_binary(r"assets/images/webinar/final_lesson_photo.jpg")
+                                image=utils.read_file_as_binary(r"assets/images/webinar/final_lesson_photo.jpg"),
+                                buttons={
+                                    "inline_keyboard": [[{"text": "Подписаться на канал",
+                                                          "url": CHANNEL_LINK}]]
+                                }
                                 ),
                 WebinarMessages(text=texts.WEBINAR_REMINDER_3,
                                 order_of_sending=3, delay_time_minutes=timings.WEBINAR_REMINDER_3_TIME,
                                 image=utils.read_file_as_binary(
-                                    r"assets/images/webinar/webinar_reminder_4_hours_photo.jpg")),
+                                    r"assets/images/webinar/webinar_reminder_4_hours_photo.jpg"),
+                                buttons={
+                                    "inline_keyboard": [[{"text": "Подписаться на канал",
+                                                          "url": texts.CHANNEL_LINK}]]
+                                }
+                                ),
+
                 WebinarMessages(text=texts.WEBINAR_REMINDER_4,
                                 order_of_sending=4, delay_time_minutes=timings.WEBINAR_REMINDER_4_TIME,
                                 image=utils.read_file_as_binary(
-                                    r"assets/images/webinar/webinar_reminder_1_hour_photo.jpg")
+                                    r"assets/images/webinar/webinar_reminder_1_hour_photo.jpg"),
+                                buttons={
+                                    "inline_keyboard": [[{"text": "Подписаться на канал",
+                                                          "url": texts.CHANNEL_LINK}]]
+                                }
                                 ),
                 WebinarMessages(text=texts.WEBINAR_REMINDER_5,
                                 order_of_sending=5, delay_time_minutes=timings.WEBINAR_REMINDER_5_TIME,
@@ -309,7 +303,7 @@ async def initialize_webinar_messages():
                                 }
                                 ),
                 WebinarMessages(text=texts.WEBINAR_REMINDER_6,
-                                order_of_sending=6, delay_time_minutes= timings.WEBINAR_REMINDER_6_TIME,
+                                order_of_sending=6, delay_time_minutes=timings.WEBINAR_REMINDER_6_TIME,
                                 image=utils.read_file_as_binary(
                                     r"assets/images/webinar/webinar_reminder_live_photo.jpg"),
                                 buttons={
@@ -317,7 +311,7 @@ async def initialize_webinar_messages():
                                 }
                                 ),
                 WebinarMessages(text=texts.WEBINAR_REMINDER_7,
-                                order_of_sending=7, delay_time_minutes= timings.WEBINAR_REMINDER_7_TIME,
+                                order_of_sending=7, delay_time_minutes=timings.WEBINAR_REMINDER_7_TIME,
                                 image=utils.read_file_as_binary(
                                     r"assets/images/webinar/webinar_reminder_post_15_minutes_photo.jpg"),
                                 buttons={
@@ -326,7 +320,7 @@ async def initialize_webinar_messages():
                                 }
                                 ),
                 WebinarMessages(text=texts.WEBINAR_REMINDER_8,
-                                order_of_sending=8, delay_time_minutes= timings.WEBINAR_REMINDER_8_TIME,
+                                order_of_sending=8, delay_time_minutes=timings.WEBINAR_REMINDER_8_TIME,
                                 image=utils.read_file_as_binary(
                                     r"assets/images/webinar/webinar_reminder_post_30_minutes_photo.jpg"),
                                 buttons={
@@ -335,7 +329,7 @@ async def initialize_webinar_messages():
                                 }
                                 ),
                 WebinarMessages(text=texts.WEBINAR_REMINDER_9,
-                                order_of_sending=9, delay_time_minutes= timings.WEBINAR_REMINDER_9_TIME,
+                                order_of_sending=9, delay_time_minutes=timings.WEBINAR_REMINDER_9_TIME,
                                 image=utils.read_file_as_binary(
                                     r"assets/images/webinar/webinar_reminder_post_45_minutes_photo.jpg"),
                                 buttons={
@@ -344,7 +338,7 @@ async def initialize_webinar_messages():
                                 }
                                 ),
                 WebinarMessages(text=texts.WEBINAR_REMINDER_10,
-                                order_of_sending=10, delay_time_minutes= timings.WEBINAR_REMINDER_10_TIME,
+                                order_of_sending=10, delay_time_minutes=timings.WEBINAR_REMINDER_10_TIME,
                                 image=None,
                                 buttons={
                                     "inline_keyboard": [[{"text": "Хочу в Body Up",
@@ -370,7 +364,7 @@ async def initialize_first_offer_messages():
         if result.scalars().first() is None:
             initial_messages = [
                 FirstOfferMessages(text=texts.FIRST_OFFER_MESSAGE_1,
-                                   order_of_sending=1, delay_time_minutes=0,  # 0 + кружок
+                                   order_of_sending=1, delay_time_minutes=timings.FIRST_OFFER_MESSAGE_1_TIME,  # 0 + кружок
                                    image=utils.read_file_as_binary(
                                        r"assets/images/first_offer/first_offer_1_photo.jpg"),
                                    buttons={
@@ -383,7 +377,7 @@ async def initialize_first_offer_messages():
                                    }
                                    ),
                 FirstOfferMessages(text=texts.FIRST_OFFER_MESSAGE_2,
-                                   order_of_sending=2, delay_time_minutes=5,  # 26 * 60
+                                   order_of_sending=2, delay_time_minutes=timings.FIRST_OFFER_MESSAGE_2_TIME,  # 26 * 60
                                    image=utils.read_file_as_binary(
                                        r"assets/images/first_offer/first_offer_2_photo.jpg"),
                                    buttons={
@@ -395,7 +389,7 @@ async def initialize_first_offer_messages():
                                    }
                                    ),
                 FirstOfferMessages(text=texts.FIRST_OFFER_MESSAGE_3,
-                                   order_of_sending=3, delay_time_minutes=4,  # 24 * 60
+                                   order_of_sending=3, delay_time_minutes=timings.FIRST_OFFER_MESSAGE_3_TIME,  # 24 * 60
                                    image=utils.read_file_as_binary(
                                        r"assets/images/first_offer/first_offer_3_photo.jpg"),
                                    buttons={
@@ -447,8 +441,9 @@ async def initialize_final_offer_messages():
         else:
             print("First offer already exist - skipping initialization")
 
+
 # async def initialize_metrics():
-    # async with async_session() as session:
+# async with async_session() as session:
 
 # async def add_purchase(tg_id):
 #     async with async_session() as session:
@@ -464,12 +459,12 @@ async def initialize_final_offer_messages():
 async def set_user(message: Message):
     async with async_session() as session:
 
-        user = await session.scalar(select(User).where(User.tg_id == message.from_user.id))
+        user = await session.scalar(select(User).where(User.tg_id == message.chat.id))
         if not user:
             username = message.from_user.username
             if message.from_user.username is None:
-                username = message.from_user.id
-            session.add(User(tg_id=message.from_user.id,
+                username = message.chat.id
+            session.add(User(tg_id=message.chat.id,
                              tg_username=username,
                              didMarkPurchase=False))
             await session.commit()
@@ -537,11 +532,13 @@ async def get_final_offer_text(message_order):
         else:
             return reminder.text
 
+
 async def get_all_done_users_ids():
     async with async_session() as session:
         # Had mistake here - took User.id instead of User.tg_id
         result = await session.execute(select(User.tg_id).where(User.cur_stage == UserStage.DONE))
         return result.scalars()
+
 
 async def set_stage(tg_id: int, stage: UserStage):
     async with async_session() as session:
@@ -554,6 +551,7 @@ async def set_stage(tg_id: int, stage: UserStage):
             raise NoResultFound(f"User with tg_id {tg_id} not found, hence could"
                                 f"not set stage \'" + stage.value + "\'")
 
+
 async def get_stage(tg_id: int) -> UserStage:
     async with async_session() as session:
         res = await session.execute(select(User).where(User.tg_id == tg_id))
@@ -563,18 +561,20 @@ async def get_stage(tg_id: int) -> UserStage:
         else:
             raise NoResultFound(f"User with tg_id {tg_id} not found")
 
-async def add_choose_time_himself_metric(tg_id : int):
+
+async def add_choose_time_himself_metric(tg_id: int):
     async with async_session() as session:
         res = await session.execute(select(UserMetrics).where(UserMetrics.tg_id == tg_id))
         user_metric = res.scalar_one_or_none()
         if user_metric:
             user_metric.did_choose_time_himself = True
-            session.commit()
+            await session.commit()
         else:
-            session.add(UserMetrics(tg_id=tg_id,did_choose_time_himself=True))
-            session.commit()
+            session.add(UserMetrics(tg_id=tg_id, did_choose_time_himself=True))
+            await session.commit()
 
-async def add_did_press_lesson_himself_metric(tg_id : int, lesson_index : int):
+
+async def add_did_press_lesson_himself_metric(tg_id: int, lesson_index: int):
     async with async_session() as session:
         res = await session.execute(select(UserMetrics).where(UserMetrics.tg_id == tg_id))
         user_metric = res.scalar_one_or_none()
@@ -585,19 +585,19 @@ async def add_did_press_lesson_himself_metric(tg_id : int, lesson_index : int):
                 user_metric.did_press_next_lesson_2 = True
             elif lesson_index == 3:
                 user_metric.did_press_next_lesson_3 = True
-            session.commit()
+            await session.commit()
         else:
             if lesson_index == 1:
                 session.add(UserMetrics(tg_id=tg_id, did_press_next_lesson_1=True))
             elif lesson_index == 2:
-                session.add(UserMetrics(tg_id=tg_id,did_press_next_lesson_2=True))
+                session.add(UserMetrics(tg_id=tg_id, did_press_next_lesson_2=True))
             elif lesson_index == 3:
-                session.add(UserMetrics(tg_id=tg_id,did_press_next_lesson_3=True))
+                session.add(UserMetrics(tg_id=tg_id, did_press_next_lesson_3=True))
 
-            session.commit()
+            await session.commit()
 
 
-async def count_users_who_did_press_lesson_himself_metric(lesson_index : int):
+async def count_users_who_did_press_lesson_himself_metric(lesson_index: int):
     async with async_session() as session:
         res = 0
 
@@ -609,7 +609,7 @@ async def count_users_who_did_press_lesson_himself_metric(lesson_index : int):
 
         if lesson_index == 3:
             res = await session.execute(select(UserMetrics).where(UserMetrics.did_press_next_lesson_3 == True))
-        count  = (res.scalars().all())
+        count = (res.scalars().all())
         return count
 
 
@@ -621,6 +621,5 @@ async def count_users_who_got_flag(flag_index: int):
 
         if flag_index == 2:
             res = await session.execute(select(User).where(User.second_flag == True))
-        count  = (res.scalars().all())
+        count = (res.scalars().all())
         return count
-

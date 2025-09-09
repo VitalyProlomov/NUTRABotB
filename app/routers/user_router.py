@@ -1,19 +1,16 @@
 from pathlib import Path
 
 from aiogram import F, Router
-from aiogram.client import bot
 from aiogram.enums import ParseMode
 from aiogram.filters import CommandStart, Command
 from aiogram.types import Message, CallbackQuery, FSInputFile
 from aiogram.fsm.state import StatesGroup, State
-from aiogram.fsm.context import FSMContext
 from aiogram import Bot
 
 import app.utils
 import app.keyboards.general_keyboards as gkb
 import app.database.requests as rq
 import config
-import texts
 from app import utils
 from app.middlewares import TestMiddleWare
 from texts import SUBSCRIPTION_NEEDED_MESSAGE, WELCOME_MESSAGE, GREETINGS_SUBSCRIBED_MESSAGE
@@ -32,11 +29,11 @@ class Reg(StatesGroup):
 
 @router1.message(CommandStart())
 async def cmd_start(message: Message, bot: Bot):
-    if await rq.does_user_exist(message.from_user.id):
-        await bot.send_message(message.from_user.id, "Чтобы перезапустить бота, напишите /restart")
+    if await rq.does_user_exist(message.chat.id):
+        await bot.send_message(message.chat.id, "Чтобы перезапустить бота, напишите /restart")
         return
     # Since bot can only be started with /start command
-    # await bot.send_message(message.from_user.id, "Message sent")
+    # await bot.send_message(message.chat.id, "Message sent")
     await rq.set_user(message)
     # await bot.send_message(message.chat.id,
     #                         text="<b>Bold</b>, <i>italic</i>, <u>underline</u>",
@@ -45,13 +42,13 @@ async def cmd_start(message: Message, bot: Bot):
 
 
     # await bot.send_message(message.chat.id, text)
-    if message.from_user.id in config.ADMIN_IDS:
+    if message.chat.id in config.ADMIN_IDS:
         await message.reply("Добро пожаловать, Админ! Используйте /admin для доступа к панели админа")
         return
 
     await bot.send_video_note(message.chat.id, video_note=FSInputFile("assets/videos/welcome_video_note.mp4"))
 
-    #if not await app.utils.check_user_subscription(message.from_user.id, bot):
+    #if not await app.utils.check_user_subscription(message.chat.id, bot):
     await message.answer(WELCOME_MESSAGE,
                      reply_markup=gkb.lesson_1_keyboard,
                      parse_mode=ParseMode.HTML)
@@ -59,18 +56,18 @@ async def cmd_start(message: Message, bot: Bot):
        # return #must be in the if statement
 
     # these must be if subscription check is necessary
-    await print_greet_message(message, bot)
-    await app.utils.add_timer_for_lessons_message(1, message, bot)
+    # await print_greet_message(message, bot)
+    # await app.utils.add_timer_for_lessons_message(1, message, bot)
 
 @router1.message(Command('restart'))
 async def restart(message: Message, bot: Bot):
-    if await rq.does_user_exist(message.from_user.id):
+    if await rq.does_user_exist(message.chat.id):
         res = await rq.remove_user(message.chat.id)
 
         if res:
             await cmd_start(message, bot)
         else:
-            await bot.send_message(message.from_user.id, "Cannot restart currently")
+            await bot.send_message(message.chat.id, "Cannot restart currently")
     else:
         await cmd_start(message, bot)
 
@@ -97,8 +94,8 @@ async def print_greet_message(message: Message, bot: Bot):
 @router1.callback_query(F.data.startswith("next_lesson"))
 async def send_lesson_message_from_button_click(callback: CallbackQuery, bot : Bot):
     index = callback.data.split("_")[-1]
-    scheduler.remove_all_jobs()
-    user_tg_id = callback.message.chat.id
+    utils.remove_all_user_jobs(callback.from_user.id)
+    user_tg_id = callback.from_user.id
     await rq.add_did_press_lesson_himself_metric(tg_id=user_tg_id, lesson_index=int(index))
     await utils.send_lesson_message(int(index), message=callback.message, bot=bot)
 
@@ -109,32 +106,36 @@ async def set_webinar_time_date(callback: CallbackQuery, bot : Bot):
     user_tg_id = callback.from_user.id
     webinar_date = await rq.get_user_webinar_date(user_tg_id)
 
+    # Check for buttons to be active - must happen before or other logic
+    if webinar_date is not None and utils.did_webinar_date_come(webinar_date):
+        return # buttons expired
+
+    utils.remove_all_user_jobs(tg_id=callback.from_user.id)
+    print(callback.from_user.id)
+
     if callback.from_user.first_name != "Fake_User_Callback" or callback.from_user.last_name != "Scheduled":
         await rq.add_choose_time_himself_metric(user_tg_id)
-
-    if webinar_date is not None and utils.did_webinar_date_come(webinar_date):
-        return# buttons expired
 
     await rq.set_webinar_date_as_next_day(user_tg_id)
 
     if webinar_date is None or not utils.did_webinar_date_come(webinar_date):
         await rq.change_webinar_time(time, user_tg_id)
 
-        scheduler.remove_all_jobs()
+        utils.remove_all_user_jobs(callback.from_user.id)
         await utils.add_timer_for_webinar_reminders(bot, callback, 1)
 
 
 #
 # @router1.callback_query(F.data == "mark_purchase")
 # async def markPurchase(message: Message):
-#     await rq.mark_purchase(message.from_user.id)
+#     await rq.mark_purchase(message.chat.id)
 #     await message.answer("Отлично, спасибо за покупку :)")
 
 
 @router1.callback_query(F.data == 'check_subscription')
 async def check_subscription(callback: CallbackQuery, bot: Bot):
     if not await app.utils.check_user_subscription(callback.from_user.id, bot):
-        await bot.send_message(callback.message.chat.id, SUBSCRIPTION_NEEDED_MESSAGE,
+        await bot.send_message(callback.from_user.id, SUBSCRIPTION_NEEDED_MESSAGE,
                            parse_mode=ParseMode.HTML,
                                reply_markup=gkb.lesson_1_keyboard)
         return False
@@ -148,7 +149,7 @@ async def check_subscription(callback: CallbackQuery, bot: Bot):
 
 @router1.callback_query(F.data == 'chosen_at_1_questionary_no')
 async def restart_webinar_reminders(callback: CallbackQuery, bot: Bot):
-    scheduler.remove_all_jobs()
+    utils.remove_all_user_jobs(callback.from_user.id)
 
     # I am setting it in send_question_1_message
     # await set_flag_1(callback.from_user.id)
@@ -159,7 +160,7 @@ async def restart_webinar_reminders(callback: CallbackQuery, bot: Bot):
 
 @router1.callback_query(F.data.startswith("chosen_at_1_questionary_yes"))
 async def continue_with_selling_offer(callback: CallbackQuery, bot : Bot):
-    scheduler.remove_all_jobs()
+    utils.remove_all_user_jobs(callback.from_user.id)
     # For the 2nd question not to apper when user answers 'yes' in 1st question
     await utils.set_flag_2(callback.from_user.id)
 
@@ -171,7 +172,7 @@ async def continue_with_selling_offer(callback: CallbackQuery, bot : Bot):
 
 @router1.callback_query(F.data == 'chosen_at_2_questionary_no')
 async def restart_webinar_reminders(callback: CallbackQuery, bot: Bot):
-    scheduler.remove_all_jobs()
+    utils.remove_all_user_jobs(callback.from_user.id)
 
     # I am setting it in send_question_1_message
     # await set_flag_1(callback.from_user.id)
@@ -182,7 +183,7 @@ async def restart_webinar_reminders(callback: CallbackQuery, bot: Bot):
 
 @router1.callback_query(F.data.startswith("chosen_at_2_questionary_yes"))
 async def continue_with_final_selling_offer(callback: CallbackQuery, bot : Bot):
-    scheduler.remove_all_jobs()
+    utils.remove_all_user_jobs(callback.from_user.id)
 
     # I am setting it in send_question_1_message
     # await set_flag_1(callback.from_user.id)

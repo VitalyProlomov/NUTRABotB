@@ -3,7 +3,7 @@ from aiogram.enums import ParseMode
 from aiogram.filters import Command
 from aiogram import Router, Bot
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message
 
 from app.filters.admin_filter import IsAdminFilter
 from app.middlewares import TestMiddleWare
@@ -46,7 +46,7 @@ async def initialize_broadcast(message: Message, state: FSMContext):
     # important, set_state() method doesnt clear the prev state
     await state.clear()
     await state.set_state(States.BroadcastState.waiting_for_message)
-    reply = await message.reply("Пожалуйста, напишите сообщение, которое вы хотите разослать всем пользователям:\n"
+    await message.reply("Пожалуйста, напишите сообщение, которое вы хотите разослать всем пользователям:\n"
                                 " (Или напишите ОТМЕНА для отмены рассылки)")
 
     await state.set_state(States.BroadcastState.waiting_for_message)

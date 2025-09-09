@@ -2,7 +2,7 @@ from aiogram.types import (InlineKeyboardMarkup, InlineKeyboardButton)
 
 from config import CHANNEL_NAME
 
-subscription_keyboard = InlineKeyboardMarkup(inline_keyboard=[
+subscription_check_keyboard = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Подписаться', url=f'https://t.me/{CHANNEL_NAME[1:]}')],
     [InlineKeyboardButton(text='Готово', callback_data='check_subscription')]
 ])

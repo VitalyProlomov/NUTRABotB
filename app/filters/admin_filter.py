@@ -6,4 +6,4 @@ import config
 
 class IsAdminFilter(BaseFilter):
     async def __call__(self, message: types.Message) -> bool:
-        return message.from_user.id in config.ADMIN_IDS
+        return message.chat.id in config.ADMIN_IDS

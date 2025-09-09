@@ -1,4 +1,4 @@
-from sqlalchemy import BigInteger, String, ForeignKey, Boolean, Integer
+from sqlalchemy import BigInteger, Boolean, Integer
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 from sqlalchemy.ext.asyncio import AsyncAttrs, async_sessionmaker, create_async_engine
 from sqlalchemy import String, Enum as SQLEnum

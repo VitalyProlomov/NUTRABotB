@@ -5,11 +5,10 @@ import logging
 from aiogram import Bot, Dispatcher
 
 import app.utils
-import timings
 from config import TOKEN
 from app.routers.user_router import router1
 from app.routers.admin_router import admin_router
-from app.database.models import async_main, UserStage
+from app.database.models import async_main
 from app.utils import scheduler
 
 import app.database.requests as rq
@@ -20,7 +19,6 @@ async def on_startup():
     await rq.initialize_webinar_messages()
     await rq.initialize_first_offer_messages()
     await rq.initialize_final_offer_messages()
-
     print("startup worked")
 
     # await rq.deleteTHIS()
@@ -43,7 +41,7 @@ async def main():
 
     # await deleteTHIS()
     # print(await rq.get_selling_message(1))
-    bot = Bot(token = TOKEN)
+    main_bot = Bot(token = TOKEN)
     # await set_bot_commands(bot)
     dp = Dispatcher()
     dp.include_router(router1)
@@ -55,7 +53,7 @@ async def main():
     #TODO
     # await app.utils.send_button_message_to_channel(bot, "BUTTON TEXT")
 
-    await dp.start_polling(bot, on_startup = on_startup)
+    await dp.start_polling(main_bot, on_startup = on_startup)
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
