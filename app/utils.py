@@ -123,7 +123,7 @@ async def send_webinar_time_choice_reminder(bot: Bot, message: Message):
 
     today_2359 : datetime = datetime.combine(
         now.date(),  # Today's date
-        time(18, 46 ),  # 23:59 time
+        time(18, 53),  # 23:59 time
         tzinfo=MOSCOW_TZ  # Moscow timezone
     )
 
@@ -199,7 +199,7 @@ async def add_timer_for_webinar_reminders(bot: Bot, callback: CallbackQuery, rem
 
         start_time = datetime.combine(
             now.date(), # + timedelta(days=1),  # Next day
-            time(hour=18, minute=47),  # At 06:00
+            time(hour=18, minute=54),  # At 06:00
             tzinfo=MOSCOW_TZ
         )
         if time_chosen == "19:00": # TODO CHANGE to hours
@@ -501,7 +501,7 @@ def add_job_by_delay(func : Any, delay_seconds : int, args : list | tuple, user_
                       trigger='date',
                       next_run_time=datetime.now() + timedelta(seconds=delay_seconds),
                       args=args,
-                      id=f'{func.__name__}|{datetime.now().strftime('%d-%m-%Y_%H:%M:%S')}|{user_tg_id}',
+                      id=f"{func.__name__}|{datetime.now().strftime('%d-%m-%Y_%H:%M:%S')}|{user_tg_id}",
                       replace_existing=True)
 
 def add_job_by_date(func : Any, date_time : datetime, args : list | tuple, user_tg_id : int) -> Job:
@@ -517,7 +517,7 @@ def add_job_by_date(func : Any, date_time : datetime, args : list | tuple, user_
                       trigger='date',
                       next_run_time= date_time,
                       args=args,
-                      id=f'{func.__name__}|{datetime.now().strftime('%d-%m-%Y_%H:%M:%S')}|{user_tg_id}',
+                      id=f"{func.__name__}|{datetime.now().strftime('%d-%m-%Y_%H:%M:%S')}|{user_tg_id}",
                       replace_existing=True)
 
 def remove_all_user_jobs(tg_id : int):
