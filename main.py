@@ -5,6 +5,7 @@ import logging
 from aiogram import Bot, Dispatcher
 
 import app.utils
+import texts
 from config import TOKEN
 from app.routers.user_router import router1
 from app.routers.admin_router import admin_router
@@ -50,8 +51,7 @@ async def main():
     # await bot.set_my_commands([])
     scheduler.start()
 
-    #TODO
-    # await app.utils.send_button_message_to_channel(bot, "BUTTON TEXT")
+    await app.utils.send_button_message_to_channel(main_bot, text=texts.PINNED_MESSAGE)
 
     await dp.start_polling(main_bot, on_startup = on_startup)
 

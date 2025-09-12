@@ -25,7 +25,7 @@ mark_purchase_keyboard = InlineKeyboardMarkup(inline_keyboard=[
 ])
 
 channel_link_keyboard = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text="Click Me!", url="https://example.com")]
+    [InlineKeyboardButton(text="Бесплатный курс", url="https://t.me/HodyanokBot")]
 ])
 
 webinar_reminder_1_keyboard = InlineKeyboardMarkup(
