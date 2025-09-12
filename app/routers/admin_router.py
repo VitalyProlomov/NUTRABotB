@@ -155,7 +155,7 @@ async def show_metrics(message: Message, state: FSMContext):
     ''')
 
 
-    # @admin_router.callback_query(F.data == "selling_message_1_option",
+# @admin_router.callback_query(F.data == "selling_message_1_option",
 #                              States.ChangingSellingMessagesState.waiting_for_message_order_choice)
 # async def process_changing_selling_message_1_option(callback: CallbackQuery, state: FSMContext, bot : Bot):
 #     await process_changing_selling_message(option_ind=1, state=state, bot=bot, chat_id=callback.from_user.id)
@@ -174,8 +174,7 @@ async def show_metrics(message: Message, state: FSMContext):
 #
 #     await state.update_data(option_ind=option_ind)
 #     await state.set_state(States.ChangingSellingMessagesState.waiting_for_new_message)
-#
-#
+
 # @admin_router.message(States.ChangingSellingMessagesState.waiting_for_new_message)
 # async def get_new_message(message : Message, state : FSMContext):
 #
@@ -188,7 +187,6 @@ async def show_metrics(message: Message, state: FSMContext):
 #     )
 #     await state.set_state(States.ChangingSellingMessagesState.waiting_for_confirmation)
 
-#
 # @admin_router.message(F.text == "Подтвердить ✅",
 #                       States.ChangingSellingMessagesState.waiting_for_confirmation)
 # async def change_message( message: Message, state: FSMContext, bot : Bot):

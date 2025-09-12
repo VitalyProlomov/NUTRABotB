@@ -7,7 +7,6 @@ from aiogram.enums import ParseMode
 from aiogram.types import Message, User, InlineKeyboardMarkup, CallbackQuery, BufferedInputFile, FSInputFile
 from datetime import datetime, time, timedelta
 import json
-from datetime import date
 from zoneinfo import ZoneInfo
 
 from apscheduler.job import Job
@@ -420,9 +419,9 @@ async def add_timer_for_final_offer(bot: Bot, callback: CallbackQuery, order_ind
     )
 
 
-def did_webinar_date_come(user_webinar_date: date) -> bool:
-    """Check if current Moscow date is AFTER webinar date"""
-    return datetime.now(MOSCOW_TZ).date() >= user_webinar_date
+# def did_webinar_date_come(user_webinar_date: date) -> bool:
+#     """Check if current Moscow date is AFTER webinar date"""
+#     return datetime.now(MOSCOW_TZ).date() >= user_webinar_date
 
 
 def get_keyboard_from_database(row: Any) -> Optional[InlineKeyboardMarkup]:

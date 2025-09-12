@@ -109,8 +109,10 @@ async def set_webinar_time_date(callback: CallbackQuery, bot : Bot):
     webinar_date = await rq.get_user_webinar_date(user_tg_id)
 
     # Check for buttons to be active - must happen before or other logic
-    if webinar_date is not None and utils.did_webinar_date_come(webinar_date):
-        return # buttons expired
+    # Removed button expring
+
+    # if webinar_date is not None and utils.did_webinar_date_come(webinar_date):
+    #     return # buttons expired
 
     utils.remove_all_user_jobs(tg_id=callback.from_user.id)
     print(callback.from_user.id)
@@ -120,11 +122,11 @@ async def set_webinar_time_date(callback: CallbackQuery, bot : Bot):
 
     await rq.set_webinar_date_as_next_day(user_tg_id)
 
-    if webinar_date is None or not utils.did_webinar_date_come(webinar_date):
-        await rq.change_webinar_time(time, user_tg_id)
+    # if webinar_date is None or not utils.did_webinar_date_come(webinar_date):
+    await rq.change_webinar_time(time, user_tg_id)
 
-        utils.remove_all_user_jobs(callback.from_user.id)
-        await utils.add_timer_for_webinar_reminders(bot, callback, 1)
+    utils.remove_all_user_jobs(callback.from_user.id)
+    await utils.add_timer_for_webinar_reminders(bot, callback, 1)
 
 
 #
