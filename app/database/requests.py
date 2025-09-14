@@ -623,3 +623,11 @@ async def count_users_who_got_flag(flag_index: int):
             res = await session.execute(select(User).where(User.second_flag == True))
         count = (res.scalars().all())
         return len(count)
+
+async def count_users_with_chosen_time(time):
+    async with async_session() as session:
+
+        res = await session.execute(select(User).where(User.webinar_time == time))
+
+        count = (res.scalars().all())
+        return len(count)

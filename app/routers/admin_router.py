@@ -141,6 +141,10 @@ async def show_metrics(message: Message, state: FSMContext):
 
     flag_1_users = await rq.count_users_who_got_flag(1)
     flag_2_users = await rq.count_users_who_got_flag(2)
+
+    time_12_00_users = await rq.count_users_with_chosen_time("12:00")
+    time_19_00_users = await rq.count_users_with_chosen_time("19:00")
+
     # TO DO: fix Nones nulls and test
     await message.answer(f'''Метрики:
     - Всего пользователей: {users_count}
@@ -152,6 +156,8 @@ async def show_metrics(message: Message, state: FSMContext):
     - Пользователей, перешедших на 2 урок по кнопке: {lesson2}
     - Пользователей, перешедших на 3 урок по кнопке: {lesson3}
     -----------------
+    - Пользователей, выбравших 12:00 : {time_12_00_users}
+    - - Пользователей, выбравших 19:00 : {time_19_00_users}
     ''')
 
 
