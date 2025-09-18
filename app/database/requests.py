@@ -200,13 +200,13 @@ async def get_lesson_message_info(selling_message_order: int):
         res = res.scalar_one_or_none()
         return res
 
-async def initialize_broadcast_messages():
+async def initialize_lesson_messages():
     async with async_session() as session:
-        # Check if any broadcast messages exist
-        result = await session.execute(select(LessonMessages))
-
-        await session.delete(result)
+        await session.execute(delete(LessonMessages))
         await session.commit()
+        print("All existing lesson messages deleted")
+
+        result = await session.execute(select(LessonMessages))
 
         # Uncomment for another ay off intializing
         if result.scalars().first() is None:
@@ -250,18 +250,18 @@ async def initialize_broadcast_messages():
             ]
             session.add_all(initial_messages)
             await session.commit()
-            print("Initial broadcast messages created")
+            print("Initial lesson messages created")
         else:
-            print("Broadcast messages already exist - skipping initialization")
+            print("Lesson messages already exist - skipping initialization")
 
 
 async def initialize_webinar_messages():
     async with async_session() as session:
-        # Check if any broadcast messages exist
-        result = await session.execute(select(WebinarMessages))
-
-        await session.delete(result)
+        await session.execute(delete(WebinarMessages))
         await session.commit()
+        print("All existing broadcast messages deleted")
+
+        result = await session.execute(select(WebinarMessages))
 
         if result.scalars().first() is None:
             initial_messages = [
@@ -366,12 +366,12 @@ async def initialize_webinar_messages():
 
 async def initialize_first_offer_messages():
     async with async_session() as session:
-        # Check if any broadcast messages exist
-        result = await session.execute(select(FirstOfferMessages))
-
         # Comment this for initialization only if database is empty
-        await session.delete(result)
+        await session.execute(delete(FirstOfferMessages))
         await session.commit()
+        print("All existing broadcast messages deleted")
+
+        result = await session.execute(select(FirstOfferMessages))
 
         if result.scalars().first() is None:
             initial_messages = [
@@ -415,18 +415,18 @@ async def initialize_first_offer_messages():
             ]
             session.add_all(initial_messages)
             await session.commit()
-            print("Initial final offer messages created")
+            print("Initial first offer messages created")
         else:
-            print("Final offer messages already exist - skipping initialization")
+            print("First offer messages already exist - skipping initialization")
 
 
 async def initialize_final_offer_messages():
     async with async_session() as session:
-        # Check if any broadcast messages exist
-        result = await session.execute(select(FinalOfferMessages))
-
-        await session.delete(result)
+        await session.execute(delete(FinalOfferMessages))
         await session.commit()
+        print("All existing broadcast messages deleted")
+
+        result = await session.execute(select(FinalOfferMessages))
 
         if result.scalars().first() is None:
             initial_messages = [
@@ -452,9 +452,9 @@ async def initialize_final_offer_messages():
             ]
             session.add_all(initial_messages)
             await session.commit()
-            print("Initial first offer messages created")
+            print("Initial final offer messages created")
         else:
-            print("First offer already exist - skipping initialization")
+            print("Final offer already exist - skipping initialization")
 
 
 # async def initialize_metrics():

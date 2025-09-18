@@ -15,7 +15,7 @@ from app.utils import scheduler
 import app.database.requests as rq
 
 async def on_startup():
-    await rq.initialize_broadcast_messages()
+    await rq.initialize_lesson_messages()
     await rq.initialize_webinar_messages()
     await rq.initialize_first_offer_messages()
     await rq.initialize_final_offer_messages()
