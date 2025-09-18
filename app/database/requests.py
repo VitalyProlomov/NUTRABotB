@@ -10,7 +10,7 @@ from app.database.models import *
 from sqlalchemy import select, delete
 from zoneinfo import ZoneInfo
 
-from texts import MINI_COURSE_LINK, CARE_CENTER_LINK, BODY_UP_LINK, WEBINAR_LINK, QUIZ_LINK, LESSON_1_LINK, \
+from texts import MINI_COURSE_LINK, REQUEST_LINK, BODY_UP_LINK, WEBINAR_LINK, QUIZ_LINK, LESSON_1_LINK, \
     LESSON_2_LINK, CHANNEL_LINK
 
 MOSCOW_TZ = ZoneInfo("Europe/Moscow")
@@ -341,10 +341,10 @@ async def initialize_webinar_messages():
                                 order_of_sending=10, delay_time_minutes=timings.WEBINAR_REMINDER_10_TIME,
                                 image=None,
                                 buttons={
-                                    "inline_keyboard": [[{"text": "Хочу в Body Up",
+                                    "inline_keyboard": [[{"text": "Оплатить со скидкой",
                                                           "url": BODY_UP_LINK}],
-                                                        [{"text": "Написать в службу заботы",
-                                                          "url": CARE_CENTER_LINK}]]
+                                                        [{"text": "🎁 Оставить заявку",
+                                                          "url": REQUEST_LINK}]]
                                 }
                                 )
 
@@ -368,10 +368,10 @@ async def initialize_first_offer_messages():
                                    image=utils.read_file_as_binary(
                                        r"assets/images/first_offer/first_offer_1_photo.jpg"),
                                    buttons={
-                                       "inline_keyboard": [[{"text": "Хочу в Body Up",
+                                       "inline_keyboard": [[{"text": "Оплатить со скидкой",
                                                              "url": BODY_UP_LINK}],
-                                                           [{"text": "Написать в службу заботы",
-                                                             "url": CARE_CENTER_LINK}]
+                                                           [{"text": "🎁 Оставить заявку",
+                                                             "url": REQUEST_LINK}]
 
                                                            ]
                                    }
@@ -381,10 +381,10 @@ async def initialize_first_offer_messages():
                                    image=utils.read_file_as_binary(
                                        r"assets/images/first_offer/first_offer_2_photo.jpg"),
                                    buttons={
-                                       "inline_keyboard": [[{"text": "Хочу в Body Up",
+                                       "inline_keyboard": [[{"text": "Оплатить со скидкой",
                                                              "url": BODY_UP_LINK}],
-                                                           [{"text": "Написать в службу заботы",
-                                                             "url": CARE_CENTER_LINK}]
+                                                           [{"text": "🎁 Оставить заявку",
+                                                             "url": REQUEST_LINK}]
                                                            ]
                                    }
                                    ),
@@ -393,10 +393,10 @@ async def initialize_first_offer_messages():
                                    image=utils.read_file_as_binary(
                                        r"assets/images/first_offer/first_offer_3_photo.jpg"),
                                    buttons={
-                                       "inline_keyboard": [[{"text": "Хочу в Body Up",
+                                       "inline_keyboard": [[{"text": "Оплатить со скидкой",
                                                              "url": BODY_UP_LINK}],
-                                                           [{"text": "Написать в службу заботы",
-                                                             "url": CARE_CENTER_LINK}]
+                                                           [{"text": "🎁 Оставить заявку",
+                                                             "url": REQUEST_LINK}]
                                                            ]
                                    }
                                    ),
@@ -420,8 +420,8 @@ async def initialize_final_offer_messages():
                                    image=None,
                                    buttons={
                                        "inline_keyboard": [
-                                           [{"text": "Хочу в Body Up", "url": BODY_UP_LINK}],
-                                           [{"text": "Написать в службу заботы", "url": CARE_CENTER_LINK}]]
+                                           [{"text": "Оплатить со скидкой", "url": BODY_UP_LINK}],
+                                           [{"text": "🎁 Оставить заявку", "url": REQUEST_LINK}]]
                                    }
                                    ),
                 FinalOfferMessages(text=texts.FINAL_OFFER_MESSAGE_2,
@@ -430,8 +430,8 @@ async def initialize_final_offer_messages():
                                    buttons={
                                        "inline_keyboard": [
                                            [{"text": "Хочу мини-курс", "url": MINI_COURSE_LINK}],
-                                           [{"text": "Написать в службу заботы",
-                                             "url": CARE_CENTER_LINK}]]
+                                           [{"text": "🎁 Оставить заявку",
+                                             "url": REQUEST_LINK}]]
                                    }
                                    )
             ]

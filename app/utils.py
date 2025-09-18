@@ -199,7 +199,7 @@ async def add_timer_for_webinar_reminders(bot: Bot, callback: CallbackQuery, rem
     if reminder_index == 2:
         time_chosen = await rq.get_user_webinar_time(callback.from_user.id)
         if time_chosen is None:
-            time_chosen = "19:00"
+            time_chosen = "12:00"
 
         now = datetime.now(MOSCOW_TZ)
         # start_time = now + timedelta(seconds=10) # test line
