@@ -51,7 +51,7 @@ async def main():
     # await bot.set_my_commands([])
     scheduler.start()
 
-    await app.utils.send_button_message_to_channel(main_bot, text=texts.PINNED_MESSAGE)
+    # await app.utils.send_button_message_to_channel(main_bot, text=texts.PINNED_MESSAGE)
 
     await dp.start_polling(main_bot, on_startup = on_startup)
 
