@@ -204,6 +204,11 @@ async def initialize_broadcast_messages():
     async with async_session() as session:
         # Check if any broadcast messages exist
         result = await session.execute(select(LessonMessages))
+
+        session.delete(result)
+        session.commit()
+
+        # Uncomment for another ay off intializing
         if result.scalars().first() is None:
             initial_messages = [
                 LessonMessages(
@@ -254,6 +259,9 @@ async def initialize_webinar_messages():
     async with async_session() as session:
         # Check if any broadcast messages exist
         result = await session.execute(select(WebinarMessages))
+
+        session.delete(result)
+        session.commit()
 
         if result.scalars().first() is None:
             initial_messages = [
@@ -361,6 +369,10 @@ async def initialize_first_offer_messages():
         # Check if any broadcast messages exist
         result = await session.execute(select(FirstOfferMessages))
 
+        # Comment this for initialization only if database is empty
+        session.delete(result)
+        session.commit()
+
         if result.scalars().first() is None:
             initial_messages = [
                 FirstOfferMessages(text=texts.FIRST_OFFER_MESSAGE_1,
@@ -412,6 +424,9 @@ async def initialize_final_offer_messages():
     async with async_session() as session:
         # Check if any broadcast messages exist
         result = await session.execute(select(FinalOfferMessages))
+
+        session.delete(result)
+        session.commit()
 
         if result.scalars().first() is None:
             initial_messages = [
