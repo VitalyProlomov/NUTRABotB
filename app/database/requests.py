@@ -205,8 +205,8 @@ async def initialize_broadcast_messages():
         # Check if any broadcast messages exist
         result = await session.execute(select(LessonMessages))
 
-        session.delete(result)
-        session.commit()
+        await session.delete(result)
+        await session.commit()
 
         # Uncomment for another ay off intializing
         if result.scalars().first() is None:
@@ -260,8 +260,8 @@ async def initialize_webinar_messages():
         # Check if any broadcast messages exist
         result = await session.execute(select(WebinarMessages))
 
-        session.delete(result)
-        session.commit()
+        await session.delete(result)
+        await session.commit()
 
         if result.scalars().first() is None:
             initial_messages = [
@@ -370,8 +370,8 @@ async def initialize_first_offer_messages():
         result = await session.execute(select(FirstOfferMessages))
 
         # Comment this for initialization only if database is empty
-        session.delete(result)
-        session.commit()
+        await session.delete(result)
+        await session.commit()
 
         if result.scalars().first() is None:
             initial_messages = [
@@ -425,8 +425,8 @@ async def initialize_final_offer_messages():
         # Check if any broadcast messages exist
         result = await session.execute(select(FinalOfferMessages))
 
-        session.delete(result)
-        session.commit()
+        await session.delete(result)
+        await session.commit()
 
         if result.scalars().first() is None:
             initial_messages = [
