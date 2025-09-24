@@ -6,6 +6,7 @@ from aiogram import Bot, Dispatcher
 
 import app.utils
 import texts
+import timings
 from config import TOKEN
 from app.routers.user_router import router1
 from app.routers.admin_router import admin_router
@@ -38,6 +39,8 @@ async def on_startup():
 async def main():
     await async_main()
     await on_startup()
+
+    timings.test_mode()
 
     # await deleteTHIS()
     # print(await rq.get_selling_message(1))

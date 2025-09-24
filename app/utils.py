@@ -140,7 +140,7 @@ async def send_webinar_time_choice_reminder(bot: Bot, message: Message):
                        last_name="Scheduled",
                        ),
         chat_instance="simulated_instance",
-        data="selected_webinar_time_19:00",
+        data="selected_webinar_time_12:00",
         message=message
     )
 
