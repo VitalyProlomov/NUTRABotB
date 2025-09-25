@@ -1,6 +1,7 @@
 import asyncio
 import logging
-
+from app.logger import bot_logger  # Import logger
+import logger_config  # This sets up logging configuration
 
 from aiogram import Bot, Dispatcher
 
@@ -15,53 +16,73 @@ from app.utils import scheduler
 
 import app.database.requests as rq
 
+
 async def on_startup():
-    await rq.initialize_lesson_messages()
-    await rq.initialize_webinar_messages()
-    await rq.initialize_first_offer_messages()
-    await rq.initialize_final_offer_messages()
-    print("startup worked")
+    bot_logger.debug("Starting up application")
 
-    # await rq.deleteTHIS()
+    try:
+        await rq.initialize_lesson_messages()
+        bot_logger.debug("Lesson messages initialized")
 
-# async def set_bot_commands(bot: Bot):
-#     commands = [
-#         BotCommand(command="start", description="🚀 Начать работу"),
-#     ]
-#     await bot.set_my_commands(commands)
-#
-#     # Устанавливаем описание бота (видно в чате до старта)
-#     await bot.set_my_description(
-#         description="🤖 Добро пожаловать! Я ваш помощник.\n\n"
-#                     "Нажмите /start, чтобы начать."
-#     )
+        await rq.initialize_webinar_messages()
+        bot_logger.debug("Webinar messages initialized")
+
+        await rq.initialize_first_offer_messages()
+        bot_logger.debug("First offer messages initialized")
+
+        await rq.initialize_final_offer_messages()
+        bot_logger.debug("Final offer messages initialized")
+
+        bot_logger.debug("Startup completed successfully")
+
+    except Exception as e:
+        bot_logger.error(None, "Startup initialization", e)
+        raise
+
 
 async def main():
-    await async_main()
-    await on_startup()
+    bot_logger.info("Starting Telegram bot application")
 
-    timings.test_mode()
+    try:
+        await async_main()
+        bot_logger.debug("Database initialized")
 
-    # await deleteTHIS()
-    # print(await rq.get_selling_message(1))
-    main_bot = Bot(token = TOKEN)
-    # await set_bot_commands(bot)
-    dp = Dispatcher()
-    dp.include_router(router1)
-    dp.include_router(admin_router)
-    # removes menu
-    # await bot.set_my_commands([])
-    scheduler.start()
+        await on_startup()
+        bot_logger.debug("Startup tasks completed")
 
-    # await app.utils.send_button_message_to_channel(main_bot, text=texts.PINNED_MESSAGE)
+        timings.test_mode()
+        bot_logger.debug("Test mode activated")
 
-    await dp.start_polling(main_bot, on_startup = on_startup)
+        main_bot = Bot(token=TOKEN)
+        bot_logger.debug("Bot instance created")
+
+        dp = Dispatcher()
+        dp.include_router(router1)
+        dp.include_router(admin_router)
+        bot_logger.debug("Routers configured")
+
+        scheduler.start()
+        bot_logger.debug("Scheduler started")
+
+        bot_logger.info("Bot starting to poll...")
+        await dp.start_polling(main_bot, on_startup=on_startup)
+
+        # await app.utils.send_button_message_to_channel(main_bot, text=texts.PINNED_MESSAGE)
+
+
+    except Exception as e:
+        bot_logger.error(None, "Main application", e)
+        raise
+
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
-                        # ,filename='logs.txt',
-                        # filemode='a')
-    try :
+    try:
+        # Logging is already setup by logger_config import
+        bot_logger.info("Application starting")
         asyncio.run(main())
     except KeyboardInterrupt:
+        bot_logger.info("Application stopped by user")
         print('Exit')
+    except Exception as e:
+        bot_logger.error(None, "Application crashed", e)
+        print(f'Critical error: {e}')
