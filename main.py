@@ -1,13 +1,7 @@
 import asyncio
 import logging
-from app.logger import BotLogger  # Import logger
-import logger_config  # This sets up logging configuration
-
 from aiogram import Bot, Dispatcher
 
-import app.utils
-import texts
-import timings
 from config import TOKEN
 from app.routers.user_router import router1
 from app.routers.admin_router import admin_router
@@ -36,8 +30,8 @@ async def on_startup():
 
         bot_logger.debug("Startup completed successfully")
 
-    except Exception as e:
-        bot_logger.error(None, "Startup initialization", e)
+    except Exception as ex:
+        bot_logger.error(None, "Startup initialization", ex)
         raise
 
 
@@ -72,8 +66,8 @@ async def main():
         # await app.utils.send_button_message_to_channel(main_bot, text=texts.PINNED_MESSAGE)
 
 
-    except Exception as e:
-        bot_logger.error(None, "Main application", e)
+    except Exception as ex:
+        bot_logger.error(None, "Main application", ex)
         raise
 
 

@@ -77,7 +77,7 @@ async def process_broadcast_message(message: Message, state: FSMContext):
     #     return
     if message.text == "Подсчет пользователей бота":
         await state.clear()
-        await countUsers(message, state)
+        await count_users(message, state)
         return
 
     await state.update_data(message=message.text)
@@ -123,7 +123,7 @@ async def broadcast(message: Message, state: FSMContext, bot : Bot):
     await state.clear()
 
 @admin_router.message(F.text == "Подсчет пользователей бота")
-async def countUsers(message: Message, state: FSMContext):
+async def count_users(message: Message, state: FSMContext):
     await state.clear()
     users = (await rq.get_all_users_ids()).all()
     await message.answer(f'Всего вашим ботом воспользовались: {len(users)}')
