@@ -41,6 +41,10 @@ class BotLogger:
         user_info = f"User {user_id} - " if user_id else ""
         self.logger.info(f"📣 INFO - {user_info}{context} - {details}")
 
+    def database_operation(self, user_id: int, operation: str, details: str = ""):
+        """Log database operations"""
+        self.logger.info(f"💾 DATABASE - User {user_id} - {operation} - {details}")
+
     def info(self, info : str):
         self.logger.info(info)
 
