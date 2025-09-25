@@ -10,8 +10,7 @@ from app.database.models import *
 from sqlalchemy import select, delete
 from zoneinfo import ZoneInfo
 
-from texts import MINI_COURSE_LINK, REQUEST_LINK, BODY_UP_LINK, WEBINAR_LINK, CONFIRM_LINK, LESSON_1_LINK, \
-    LESSON_2_LINK, CHANNEL_LINK
+from texts import *
 
 MOSCOW_TZ = ZoneInfo("Europe/Moscow")
 
