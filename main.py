@@ -45,13 +45,14 @@ async def main():
     bot_logger.info("Starting Telegram bot application")
 
     try:
+        timings.test_mode()
+
         await async_main()
         bot_logger.debug("Database initialized")
 
         await on_startup()
         bot_logger.debug("Startup tasks completed")
 
-        timings.test_mode()
         bot_logger.debug("Test mode activated")
 
         main_bot = Bot(token=TOKEN)
