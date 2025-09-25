@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import string
 from pathlib import Path
 from typing import Any, Optional
@@ -257,7 +259,7 @@ async def add_timer_for_webinar_reminders(bot: Bot, callback: CallbackQuery, rem
 
         start_time = datetime.combine(
             now.date(),  # + timedelta(days=1),  # Next day
-            time(hour=3, minute=41),  # At 06:00
+            time(hour=6, minute=5),  # At 06:00
             tzinfo=MOSCOW_TZ
         )
         if time_chosen == "19:00":  # TO DO CHANGE to hours

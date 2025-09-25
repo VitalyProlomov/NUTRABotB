@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from app.logger import bot_logger  # Import logger
+from app.logger import BotLogger  # Import logger
 import logger_config  # This sets up logging configuration
 
 from aiogram import Bot, Dispatcher
@@ -16,6 +16,7 @@ from app.utils import scheduler
 
 import app.database.requests as rq
 
+from app.logger import bot_logger
 
 async def on_startup():
     bot_logger.debug("Starting up application")

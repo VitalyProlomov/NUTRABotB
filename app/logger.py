@@ -36,6 +36,12 @@ class BotLogger:
         """Debug messages"""
         self.logger.debug(f"🔍 DEBUG - {message}")
 
+    def info(self, user_id: Optional[int], context: str, details: str = ""):
+        """Generic info logging"""
+        user_info = f"User {user_id} - " if user_id else ""
+        self.logger.info(f"📣 INFO - {user_info}{context} - {details}")
 
-# Global logger instance
+    def info(self, info : str):
+        self.logger.info(info)
+
 bot_logger = BotLogger()
