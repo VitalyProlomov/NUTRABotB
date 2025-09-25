@@ -217,9 +217,9 @@ async def initialize_lesson_messages():
                     image=utils.read_file_as_binary(r"assets/images/lesson_1_photo.jpg"),
                     buttons={
                         "inline_keyboard": [
+                            [{"text": "Забрать гайд", "url": GUIDE_LINK}],
                             [{"text": "Смотреть урок 1", "url": LESSON_1_LINK}],
-                            [{"text": "Перейти к уроку 2", "callback_data": "next_lesson_2"}],
-                            [{"text": "Забрать гайд", "url": GUIDE_LINK}]
+                            [{"text": "Перейти к уроку 2", "callback_data": "next_lesson_2"}]
                         ]
                     },
 
@@ -231,9 +231,9 @@ async def initialize_lesson_messages():
                     image=utils.read_file_as_binary(r"assets/images/lesson_2_photo.jpg"),
                     buttons={
                         "inline_keyboard": [
+                            [{"text": "Забрать гайд", "url": GUIDE_LINK}],
                             [{"text": "Смотреть урок 2", "url": LESSON_2_LINK}],
-                            [{"text": "Перейти к уроку 3", "callback_data": "next_lesson_3"}],
-                            [{"text": "Забрать гайд", "url": GUIDE_LINK}]
+                            [{"text": "Перейти к уроку 3", "callback_data": "next_lesson_3"}]
                         ]
                     }
                 ),
