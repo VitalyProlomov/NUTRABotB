@@ -400,6 +400,9 @@ async def send_first_offer_message(bot: Bot, callback: CallbackQuery, order_inde
 
     message_info = await rq.get_first_offer_info(order_index)
 
+    if order_index == 1:
+        await bot.send_video_note(callback.from_user.id,
+                                  video_note=FSInputFile("assets/videos/tamara_video_note.mp4"))
     if message_info.image:
         photo = get_photo_from_database(message_info)
         await send_message_with_photo(bot,

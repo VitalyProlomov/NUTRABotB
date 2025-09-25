@@ -10,7 +10,7 @@ from app.database.models import *
 from sqlalchemy import select, delete
 from zoneinfo import ZoneInfo
 
-from texts import MINI_COURSE_LINK, REQUEST_LINK, BODY_UP_LINK, WEBINAR_LINK, QUIZ_LINK, LESSON_1_LINK, \
+from texts import MINI_COURSE_LINK, REQUEST_LINK, BODY_UP_LINK, WEBINAR_LINK, CONFIRM_LINK, LESSON_1_LINK, \
     LESSON_2_LINK, CHANNEL_LINK
 
 MOSCOW_TZ = ZoneInfo("Europe/Moscow")
@@ -219,7 +219,8 @@ async def initialize_lesson_messages():
                     buttons={
                         "inline_keyboard": [
                             [{"text": "Смотреть урок 1", "url": LESSON_1_LINK}],
-                            [{"text": "Перейти к уроку 2", "callback_data": "next_lesson_2"}]
+                            [{"text": "Перейти к уроку 2", "callback_data": "next_lesson_2"}],
+                            [{"text": "Забрать гайд", "url": GUIDE_LINK}]
                         ]
                     },
 
@@ -232,7 +233,8 @@ async def initialize_lesson_messages():
                     buttons={
                         "inline_keyboard": [
                             [{"text": "Смотреть урок 2", "url": LESSON_2_LINK}],
-                            [{"text": "Перейти к уроку 3", "callback_data": "next_lesson_3"}]
+                            [{"text": "Перейти к уроку 3", "callback_data": "next_lesson_3"}],
+                            [{"text": "Забрать гайд", "url": GUIDE_LINK}]
                         ]
                     }
                 ),
@@ -268,8 +270,8 @@ async def initialize_webinar_messages():
                 WebinarMessages(text=texts.WEBINAR_REMINDER_1,
                                 order_of_sending=1, delay_time_minutes=0,
                                 buttons={
-                                    "inline_keyboard": [[{"text": "Получить гайд",
-                                                          "url": QUIZ_LINK}],
+                                    "inline_keyboard": [[{"text": "Подтверждение и гайд",
+                                                          "url": CONFIRM_LINK}],
                                                         [{"text": "Подписаться на канал",
                                                           "url": CHANNEL_LINK}]]
                                 }
@@ -444,9 +446,8 @@ async def initialize_final_offer_messages():
                                    image=None,
                                    buttons={
                                        "inline_keyboard": [
-                                           [{"text": "Хочу мини-курс", "url": MINI_COURSE_LINK}],
-                                           [{"text": "🎁 Оставить заявку",
-                                             "url": REQUEST_LINK}]]
+                                           [{"text": "Пробная неделя", "url": MINI_COURSE_LINK}],
+                                           [{"text": "🎁 Оставить заявку", "url": REQUEST_LINK}]]
                                    }
                                    )
             ]
