@@ -44,7 +44,7 @@ REMINDER_TIME_19_00 = datetime.combine(
 
 TODAY_2359: datetime = datetime.combine(
     now.date(),
-    time(23, 59), # test mode: # (now + timedelta(seconds=10)).time(),
+    time(23, 59),
     tzinfo=MOSCOW_TZ
 )
 

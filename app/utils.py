@@ -251,15 +251,14 @@ async def add_timer_for_webinar_reminders(bot: Bot, callback: CallbackQuery, rem
         if time_chosen is None:
             time_chosen = "12:00"
 
-
         start_time = timings.REMINDER_TIME_12_00
         
         if time_chosen == "19:00":  # TO DO CHANGE to hours
             start_time = timings.REMINDER_TIME_19_00
 
+        # This must necessarily be after 12:00 and 19:00 initialization cases
         if main.TEST_MODE:
             start_time = datetime.now() + timedelta(seconds=10)
-
 
         remove_all_user_jobs(user_id)
         bot_logger.job_executed(user_id=user_id, job_name="remove_all_user_jobs")
