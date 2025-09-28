@@ -2,15 +2,21 @@ import asyncio
 import logging
 from aiogram import Bot, Dispatcher
 
+import timings
 from config import TOKEN
 from app.routers.user_router import router1
 from app.routers.admin_router import admin_router
 from app.database.models import async_main
 from app.utils import scheduler
 
+from app.logger import bot_logger
+
+# DO NOT REMOVE THE import logger_config IMPORT - IT SETS UP THE LOGGER_INFO WHEN BEING IMPORTED
+import logger_config
+
 import app.database.requests as rq
 
-from app.logger import bot_logger
+TEST_MODE = False
 
 async def on_startup():
     bot_logger.debug("Starting up application")
@@ -39,7 +45,7 @@ async def main():
     bot_logger.info("Starting Telegram bot application")
 
     try:
-        # timings.test_mode()
+        timings.test_mode()
 
         await async_main()
         bot_logger.debug("Database initialized")
@@ -73,6 +79,7 @@ async def main():
 
 if __name__ == '__main__':
     try:
+        logger_config.setup_logging()
         # Logging is already setup by logger_config import
         bot_logger.info("Application starting")
         asyncio.run(main())

@@ -213,7 +213,7 @@ async def initialize_lesson_messages():
                 LessonMessages(
                     text=texts.LESSON_MESSAGE_1,
                     code_name="lesson1",
-                    order_of_sending=1, delay_time_minutes=timings.LESSON_MESSAGE_1_AUTO_TIME,
+                    order_of_sending=1, delay_time_seconds=timings.LESSON_MESSAGE_1_AUTO_TIME,
                     image=utils.read_file_as_binary(r"assets/images/lesson_1_photo.jpg"),
                     buttons={
                         "inline_keyboard": [
@@ -227,11 +227,10 @@ async def initialize_lesson_messages():
                 LessonMessages(
                     text=texts.LESSON_MESSAGE_2,
                     code_name="lesson2",
-                    order_of_sending=2, delay_time_minutes=timings.LESSON_MESSAGE_2_AUTO_TIME,
+                    order_of_sending=2, delay_time_seconds=timings.LESSON_MESSAGE_2_AUTO_TIME,
                     image=utils.read_file_as_binary(r"assets/images/lesson_2_photo.jpg"),
                     buttons={
                         "inline_keyboard": [
-                            [{"text": "Забрать гайд", "url": GUIDE_LINK}],
                             [{"text": "Смотреть урок 2", "url": LESSON_2_LINK}],
                             [{"text": "Перейти к уроку 3", "callback_data": "next_lesson_3"}]
                         ]
@@ -240,7 +239,7 @@ async def initialize_lesson_messages():
                 LessonMessages(
                     text=texts.LESSON_MESSAGE_3,
                     code_name="lesson3",
-                    order_of_sending=3, delay_time_minutes=timings.LESSON_MESSAGE_3_AUTO_TIME,
+                    order_of_sending=3, delay_time_seconds=timings.LESSON_MESSAGE_3_AUTO_TIME,
                     image=utils.read_file_as_binary(r"assets/images/lesson_3_photo.jpg"),
                     buttons={
                         "inline_keyboard": [
@@ -267,7 +266,7 @@ async def initialize_webinar_messages():
         if result.scalars().first() is None:
             initial_messages = [
                 WebinarMessages(text=texts.WEBINAR_REMINDER_1,
-                                order_of_sending=1, delay_time_minutes=0,
+                                order_of_sending=1, delay_time_seconds=0,
                                 buttons={
                                     "inline_keyboard": [[{"text": "Подтверждение и гайд",
                                                           "url": CONFIRM_LINK}],
@@ -276,7 +275,7 @@ async def initialize_webinar_messages():
                                 }
                                 ),
                 WebinarMessages(text=texts.WEBINAR_REMINDER_2,
-                                order_of_sending=2, delay_time_minutes=0,
+                                order_of_sending=2, delay_time_seconds=0,
                                 image=utils.read_file_as_binary(r"assets/images/webinar/final_lesson_photo.jpg"),
                                 buttons={
                                     "inline_keyboard": [[{"text": "Подписаться на канал",
@@ -284,7 +283,7 @@ async def initialize_webinar_messages():
                                 }
                                 ),
                 WebinarMessages(text=texts.WEBINAR_REMINDER_3,
-                                order_of_sending=3, delay_time_minutes=timings.WEBINAR_REMINDER_3_TIME,
+                                order_of_sending=3, delay_time_seconds=timings.WEBINAR_REMINDER_3_TIME,
                                 image=utils.read_file_as_binary(
                                     r"assets/images/webinar/webinar_reminder_4_hours_photo.jpg"),
                                 buttons={
@@ -294,7 +293,7 @@ async def initialize_webinar_messages():
                                 ),
 
                 WebinarMessages(text=texts.WEBINAR_REMINDER_4,
-                                order_of_sending=4, delay_time_minutes=timings.WEBINAR_REMINDER_4_TIME,
+                                order_of_sending=4, delay_time_seconds=timings.WEBINAR_REMINDER_4_TIME,
                                 image=utils.read_file_as_binary(
                                     r"assets/images/webinar/webinar_reminder_1_hour_photo.jpg"),
                                 buttons={
@@ -303,7 +302,7 @@ async def initialize_webinar_messages():
                                 }
                                 ),
                 WebinarMessages(text=texts.WEBINAR_REMINDER_5,
-                                order_of_sending=5, delay_time_minutes=timings.WEBINAR_REMINDER_5_TIME,
+                                order_of_sending=5, delay_time_seconds=timings.WEBINAR_REMINDER_5_TIME,
                                 image=utils.read_file_as_binary(
                                     r"assets/images/webinar/webinar_reminder_15_minutes_photo.jpg"),
                                 buttons={
@@ -312,7 +311,7 @@ async def initialize_webinar_messages():
                                 }
                                 ),
                 WebinarMessages(text=texts.WEBINAR_REMINDER_6,
-                                order_of_sending=6, delay_time_minutes=timings.WEBINAR_REMINDER_6_TIME,
+                                order_of_sending=6, delay_time_seconds=timings.WEBINAR_REMINDER_6_TIME,
                                 image=utils.read_file_as_binary(
                                     r"assets/images/webinar/webinar_reminder_live_photo.jpg"),
                                 buttons={
@@ -320,7 +319,7 @@ async def initialize_webinar_messages():
                                 }
                                 ),
                 WebinarMessages(text=texts.WEBINAR_REMINDER_7,
-                                order_of_sending=7, delay_time_minutes=timings.WEBINAR_REMINDER_7_TIME,
+                                order_of_sending=7, delay_time_seconds=timings.WEBINAR_REMINDER_7_TIME,
                                 image=utils.read_file_as_binary(
                                     r"assets/images/webinar/webinar_reminder_post_15_minutes_photo.jpg"),
                                 buttons={
@@ -329,7 +328,7 @@ async def initialize_webinar_messages():
                                 }
                                 ),
                 WebinarMessages(text=texts.WEBINAR_REMINDER_8,
-                                order_of_sending=8, delay_time_minutes=timings.WEBINAR_REMINDER_8_TIME,
+                                order_of_sending=8, delay_time_seconds=timings.WEBINAR_REMINDER_8_TIME,
                                 image=utils.read_file_as_binary(
                                     r"assets/images/webinar/webinar_reminder_post_30_minutes_photo.jpg"),
                                 buttons={
@@ -338,7 +337,7 @@ async def initialize_webinar_messages():
                                 }
                                 ),
                 WebinarMessages(text=texts.WEBINAR_REMINDER_9,
-                                order_of_sending=9, delay_time_minutes=timings.WEBINAR_REMINDER_9_TIME,
+                                order_of_sending=9, delay_time_seconds=timings.WEBINAR_REMINDER_9_TIME,
                                 image=utils.read_file_as_binary(
                                     r"assets/images/webinar/webinar_reminder_post_45_minutes_photo.jpg"),
                                 buttons={
@@ -347,7 +346,7 @@ async def initialize_webinar_messages():
                                 }
                                 ),
                 WebinarMessages(text=texts.WEBINAR_REMINDER_10,
-                                order_of_sending=10, delay_time_minutes=timings.WEBINAR_REMINDER_10_TIME,
+                                order_of_sending=10, delay_time_seconds=timings.WEBINAR_REMINDER_10_TIME,
                                 image=None,
                                 buttons={
                                     "inline_keyboard": [[{"text": "Оплатить со скидкой",
@@ -377,7 +376,7 @@ async def initialize_first_offer_messages():
         if result.scalars().first() is None:
             initial_messages = [
                 FirstOfferMessages(text=texts.FIRST_OFFER_MESSAGE_1,
-                                   order_of_sending=1, delay_time_minutes=timings.FIRST_OFFER_MESSAGE_1_TIME,  # + кружок
+                                   order_of_sending=1, delay_time_seconds=timings.FIRST_OFFER_MESSAGE_1_TIME,  # + кружок
                                    image=utils.read_file_as_binary(
                                        r"assets/images/first_offer/first_offer_1_photo.jpg"),
                                    buttons={
@@ -390,7 +389,7 @@ async def initialize_first_offer_messages():
                                    }
                                    ),
                 FirstOfferMessages(text=texts.FIRST_OFFER_MESSAGE_2,
-                                   order_of_sending=2, delay_time_minutes=timings.FIRST_OFFER_MESSAGE_2_TIME,
+                                   order_of_sending=2, delay_time_seconds=timings.FIRST_OFFER_MESSAGE_2_TIME,
                                    image=utils.read_file_as_binary(
                                        r"assets/images/first_offer/first_offer_2_photo.jpg"),
                                    buttons={
@@ -402,7 +401,7 @@ async def initialize_first_offer_messages():
                                    }
                                    ),
                 FirstOfferMessages(text=texts.FIRST_OFFER_MESSAGE_3,
-                                   order_of_sending=3, delay_time_minutes=timings.FIRST_OFFER_MESSAGE_3_TIME,
+                                   order_of_sending=3, delay_time_seconds=timings.FIRST_OFFER_MESSAGE_3_TIME,
                                    image=utils.read_file_as_binary(
                                        r"assets/images/first_offer/first_offer_3_photo.jpg"),
                                    buttons={
@@ -432,7 +431,7 @@ async def initialize_final_offer_messages():
         if result.scalars().first() is None:
             initial_messages = [
                 FinalOfferMessages(text=texts.FINAL_OFFER_MESSAGE_1,
-                                   order_of_sending=1, delay_time_minutes=timings.FINAL_OFFER_MESSAGE_1_TIME,
+                                   order_of_sending=1, delay_time_seconds=timings.FINAL_OFFER_MESSAGE_1_TIME,
                                    image=None,
                                    buttons={
                                        "inline_keyboard": [
@@ -441,7 +440,7 @@ async def initialize_final_offer_messages():
                                    }
                                    ),
                 FinalOfferMessages(text=texts.FINAL_OFFER_MESSAGE_2,
-                                   order_of_sending=2, delay_time_minutes=timings.FINAL_OFFER_MESSAGE_2_TIME,
+                                   order_of_sending=2, delay_time_seconds=timings.FINAL_OFFER_MESSAGE_2_TIME,
                                    image=None,
                                    buttons={
                                        "inline_keyboard": [

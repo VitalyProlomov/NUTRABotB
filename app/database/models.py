@@ -51,7 +51,7 @@ class LessonMessages(Base):
     text : Mapped[str] = mapped_column(String(3000))
     # 1-based counting (index 1 is the very first message)
     order_of_sending : Mapped[int] = mapped_column(Integer)
-    delay_time_minutes : Mapped[BigInteger] = mapped_column(BigInteger, default=10)
+    delay_time_seconds : Mapped[BigInteger] = mapped_column(BigInteger, default=10)
     image: Mapped[String] = mapped_column(LargeBinary, nullable=True)
     buttons: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True, default = None)
 
@@ -62,7 +62,7 @@ class WebinarMessages(Base):
     text: Mapped[str] = mapped_column(String(3000))
     # 1-based counting (index 1 is the very first message)
     order_of_sending: Mapped[int] = mapped_column(Integer)
-    delay_time_minutes: Mapped[BigInteger] = mapped_column(BigInteger, default=10)
+    delay_time_seconds: Mapped[BigInteger] = mapped_column(BigInteger, default=10)
     flag: Mapped[Boolean] = mapped_column(Boolean, default=False)
     image: Mapped[String] = mapped_column(LargeBinary, nullable=True, default=None)
     buttons: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True, default = None)
@@ -74,7 +74,7 @@ class FirstOfferMessages(Base):
     text: Mapped[str] = mapped_column(String(3000))
     # 1-based counting (index 1 is the very first message)
     order_of_sending: Mapped[int] = mapped_column(Integer)
-    delay_time_minutes: Mapped[BigInteger] = mapped_column(BigInteger, default=10)
+    delay_time_seconds: Mapped[BigInteger] = mapped_column(BigInteger, default=10)
     image: Mapped[String] = mapped_column(LargeBinary, nullable=True)
     buttons: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True, default = None)
 
@@ -86,7 +86,7 @@ class FinalOfferMessages(Base):
     text: Mapped[str] = mapped_column(String(3000))
     # 1-based counting (index 1 is the very first message)
     order_of_sending: Mapped[int] = mapped_column(Integer)
-    delay_time_minutes: Mapped[BigInteger] = mapped_column(BigInteger, default=10)
+    delay_time_seconds: Mapped[BigInteger] = mapped_column(BigInteger, default=10)
     image: Mapped[String] = mapped_column(LargeBinary, nullable=True)
     buttons: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True, default = None)
 
