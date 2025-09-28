@@ -100,14 +100,13 @@ async def broadcast(message: Message, state: FSMContext, bot : Bot):
                          f" сообщение:\n\n{States.BroadcastState.broadcast_message}",
                          parse_mode=ParseMode.HTML)
     users = await rq.get_all_users_ids()
+    users = users.all()
     print(f'Users: {users}')
     length = len(users)
     success_am = length
 
     for user_id in users:
         try :
-            # print("member" + States.BroadcastState.broadcast_message)
-            # await bot.send_message(chat_id=user_id, text=BroadcastStates.broadcast_message)
             await bot.send_message(chat_id=user_id, text=broadcast_message['message'], parse_mode=ParseMode.HTML)
         except Exception as e:
             success_am -= 1
