@@ -173,7 +173,13 @@ async def send_webinar_time_choice_reminder(bot: Bot, message: Message):
         message=message
     )
 
-    deadline = timings.TODAY_2359
+    now = datetime.now(MOSCOW_TZ)
+
+    deadline = datetime.combine(
+        now.date(),
+        time(23, 59),
+        tzinfo=MOSCOW_TZ
+)
     if main.TEST_MODE:
         deadline = datetime.now() + timedelta(seconds= 10)
     # Schedule the job
@@ -245,16 +251,26 @@ async def add_timer_for_webinar_reminders(bot: Bot, callback: CallbackQuery, rem
     user_id = callback.from_user.id
     bot_logger.user_action(user_id, "Scheduling webinar reminder", f"Index: {reminder_index}")
 
+    now = datetime.now(MOSCOW_TZ)
+
     # set the date of message for tomorrow
     if reminder_index == 2:
         time_chosen = await rq.get_user_webinar_time(callback.from_user.id)
         if time_chosen is None:
             time_chosen = "12:00"
 
-        start_time = timings.REMINDER_TIME_12_00
+        start_time = datetime.combine(
+            now.date() + timedelta(days=1),  # Next day
+            time(hour=6, minute=0),  # At 06:00
+            tzinfo=MOSCOW_TZ
+        )
         
         if time_chosen == "19:00":  # TO DO CHANGE to hours
-            start_time = timings.REMINDER_TIME_19_00
+            start_time = datetime.combine(
+                now.date() + timedelta(days=1),  # Next day
+                time(hour=19 - 6, minute=0),  # At 13:00 - 6 hours before the webinar
+                tzinfo=MOSCOW_TZ
+)
 
         # This must necessarily be after 12:00 and 19:00 initialization cases
         if main.TEST_MODE:
@@ -680,3 +696,7 @@ def remove_job(job_id):
         bot_logger.debug(f"Removed specific job: {job_id}")
     except Exception as e:
         bot_logger.error(None, f"Removing job {job_id}", e)
+
+
+def emergency_scheduler_restart:
+    users = rq.get_all_users_ids()
