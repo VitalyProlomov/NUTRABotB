@@ -70,6 +70,7 @@ async def main():
         await dp.start_polling(main_bot, on_startup=on_startup)
 
         try:
+            bot_logger.info("Not done Users in db: " + await rq.get_all_not_done_users_ids())
             await emergency_scheduler_restart(bot=main_bot)
         except Exception as ex:
             bot_logger.error(None, "emergency scheduler failed", ex)
