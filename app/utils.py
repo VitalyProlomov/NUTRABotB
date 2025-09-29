@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import string
 from pathlib import Path
 from typing import Any, Optional
 
@@ -12,6 +11,7 @@ import json
 from zoneinfo import ZoneInfo
 
 from apscheduler.job import Job
+from sqlalchemy.testing import not_in_
 
 import app.database.models
 import main
@@ -700,23 +700,20 @@ def remove_job(job_id):
 
 
 async def emergency_scheduler_restart(bot: Bot):
-    '''
+    """
     Function to start the scheduler of webinar reminder for all not done users when the bot is restarted
     :return:
-    '''
+    """
     reminder_index = 2
 
-
-
-    done_users_id = await rq.get_all_done_users_ids()
-
+    not_done_users_id = await rq.get_all_not_done_users_ids()
 
     now = datetime.now()
-    for id in done_users_id:
+    for done_id in not_done_users_id:
         try:
             callback = CallbackQuery(
-                id=f'{id}-{datetime.now()}',
-                from_user=User(id=id,
+                id=f'{done_id}-{datetime.now()}',
+                from_user=User(id=done_id,
                                is_bot=False,
                                first_name="Fake_User_Callback",
                                last_name="Scheduled",
@@ -724,7 +721,7 @@ async def emergency_scheduler_restart(bot: Bot):
                 chat_instance="simulated_instance",
                 data="selected_webinar_time_12:00"
             )
-            time_chosen = await rq.get_user_webinar_time(id)
+            time_chosen = await rq.get_user_webinar_time(done_id)
             if time_chosen is None:
                 time_chosen = "12:00"
 
@@ -746,11 +743,11 @@ async def emergency_scheduler_restart(bot: Bot):
                 date_time=start_time,
                 args=[bot, callback, reminder_index],
                 user_tg_id=callback.from_user.id
-                # id=f"nextday9am_{chat_id}_{tomorrow_9am.timestamp()}"
+                # done_id=f"nextday9am_{chat_id}_{tomorrow_9am.timestamp()}"
             )
-            bot_logger.job_scheduled(id, f"send_webinar_reminder_{reminder_index}", str(job.next_run_time))
+            bot_logger.job_scheduled(done_id, f"send_webinar_reminder_{reminder_index}", str(job.next_run_time))
         except Exception as ex:
-            bot_logger.error(user_id= id, context="emergency startup",error= ex)
+            bot_logger.error(user_id= done_id, context="emergency startup", error= ex)
 
 
 
