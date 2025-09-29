@@ -66,9 +66,6 @@ async def main():
         scheduler.start()
         bot_logger.debug("Scheduler started")
 
-        bot_logger.info("Bot starting to poll...")
-        await dp.start_polling(main_bot, on_startup=on_startup)
-
         try:
             a = await rq.get_all_not_done_users_ids()
             bot_logger.info("Not done Users in db: " + a)
@@ -76,6 +73,10 @@ async def main():
         except Exception as ex:
             bot_logger.error(None, "emergency scheduler failed", ex)
         # await app.utils.send_button_message_to_channel(main_bot, text=texts.PINNED_MESSAGE)
+
+        bot_logger.info("Bot starting to poll...")
+        await dp.start_polling(main_bot, on_startup=on_startup)
+
 
 
     except Exception as ex:
