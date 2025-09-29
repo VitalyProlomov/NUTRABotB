@@ -7,7 +7,7 @@ from config import TOKEN
 from app.routers.user_router import router1
 from app.routers.admin_router import admin_router
 from app.database.models import async_main
-from app.utils import scheduler
+from app.utils import scheduler, emergency_scheduler_restart
 
 from app.logger import bot_logger
 
@@ -69,6 +69,10 @@ async def main():
         bot_logger.info("Bot starting to poll...")
         await dp.start_polling(main_bot, on_startup=on_startup)
 
+        try:
+            await emergency_scheduler_restart(bot=main_bot)
+        except Exception as ex:
+            bot_logger.error(None, "emergency scheduler failed", ex)
         # await app.utils.send_button_message_to_channel(main_bot, text=texts.PINNED_MESSAGE)
 
 
