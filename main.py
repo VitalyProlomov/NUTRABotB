@@ -68,7 +68,8 @@ async def main():
 
         try:
             a = await rq.get_all_not_done_users_ids()
-            bot_logger.info("Not done Users in db: " + a)
+
+            bot_logger.info(f"Not done Users in db: {len(a)}")
             await emergency_scheduler_restart(bot=main_bot)
         except Exception as ex:
             bot_logger.error(None, "emergency scheduler failed", ex)
