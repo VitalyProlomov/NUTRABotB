@@ -551,13 +551,13 @@ async def get_all_done_users_ids():
     async with async_session() as session:
         # Had mistake here - took User.id instead of User.tg_id
         result = await session.execute(select(User.tg_id).where(User.cur_stage == UserStage.DONE))
-        return result.scalars()
+        return result.scalars().all()
 
 async def get_all_not_done_users_ids():
     async with async_session() as session:
         # Had mistake here - took User.id instead of User.tg_id
         result = await session.execute(select(User.tg_id).where(User.cur_stage != UserStage.DONE))
-        return result.scalars()
+        return result.scalars().all()
 
 
 async def set_stage(tg_id: int, stage: UserStage):
