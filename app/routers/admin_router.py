@@ -100,7 +100,6 @@ async def broadcast(message: Message, state: FSMContext, bot : Bot):
                          f" сообщение:\n\n{States.BroadcastState.broadcast_message}",
                          parse_mode=ParseMode.HTML)
     users = await rq.get_all_users_ids()
-    users = users.all()
     print(f'Users: {users}')
     length = len(users)
     success_am = length
@@ -124,14 +123,14 @@ async def broadcast(message: Message, state: FSMContext, bot : Bot):
 @admin_router.message(F.text == "Подсчет пользователей бота")
 async def count_users(message: Message, state: FSMContext):
     await state.clear()
-    users = (await rq.get_all_users_ids()).all()
+    users = (await rq.get_all_users_ids())
     await message.answer(f'Всего вашим ботом воспользовались: {len(users)}')
 
 @admin_router.message(F.text == "Метрики")
 async def show_metrics(message: Message, state: FSMContext):
     await state.clear()
     users = await rq.get_all_users_ids()
-    users_count = len(users.all())
+    users_count = len(users)
 
 
     lesson1 = await rq.count_users_who_did_press_lesson_himself_metric(1)

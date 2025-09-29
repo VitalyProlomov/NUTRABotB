@@ -27,27 +27,6 @@ QUESTION_MESSAGE_2_TIME  = ((60 * 24 * 4) - (60 * 4)) * 60 # 3 days and 20 hours
 FINAL_OFFER_MESSAGE_1_TIME = 60 * 24 * 60
 FINAL_OFFER_MESSAGE_2_TIME  = 60 * 20 * 60
 
-MOSCOW_TZ = ZoneInfo("Europe/Moscow")
-now = datetime.now(MOSCOW_TZ)
-
-REMINDER_TIME_12_00= datetime.combine(
-            now.date() + timedelta(days=1),  # Next day
-            time(hour=6, minute=0),  # At 06:00
-            tzinfo=MOSCOW_TZ
-        )
-
-REMINDER_TIME_19_00 = datetime.combine(
-    now.date() + timedelta(days=1),  # Next day
-    time(hour=19 - 6, minute=0),  # At 13:00 - 6 hours before the webinar
-    tzinfo=MOSCOW_TZ
-)
-
-TODAY_2359: datetime = datetime.combine(
-    now.date(),
-    time(23, 59),
-    tzinfo=MOSCOW_TZ
-)
-
 def test_mode():
     global SUBSCRIPTION_REMINDER_1_TIME
     global SUBSCRIPTION_REMINDER_2_TIME
@@ -72,8 +51,6 @@ def test_mode():
     global QUESTION_MESSAGE_2_TIME  # 3 days and 20 hours
     global FINAL_OFFER_MESSAGE_1_TIME
     global FINAL_OFFER_MESSAGE_2_TIME
-    global REMINDER_TIME_12_00
-    global REMINDER_TIME_19_00
     global TODAY_2359
 
     main.TEST_MODE = True

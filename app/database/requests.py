@@ -67,7 +67,7 @@ async def get_all_users_ids():
     async with async_session() as session:
         # Had mistake here - took User.id instead of User.tg_id
         result = await session.execute(select(User.tg_id))
-        return result.scalars()
+        return result.scalars().all()
 
 
 async def change_webinar_time(time, tg_id):
