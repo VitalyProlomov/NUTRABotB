@@ -637,7 +637,7 @@ def add_job_by_delay(func: Any, delay_seconds: int, args: list | tuple, user_tg_
     :return: Job
     """
     # print ( f'{func.__name__}|{datetime.now().strftime('%d-%m-%Y_%H:%M:%S')}|{user_tg_id}')
-    # remove_all_user_jobs(user_tg_id)
+    remove_all_user_jobs(user_tg_id)
     job_id = f"{func.__name__}|{datetime.now().strftime('%d-%m-%Y_%H:%M:%S')}|{user_tg_id}"
     bot_logger.debug(f"Adding delayed job: {job_id} for user {user_tg_id}")
 
@@ -658,7 +658,8 @@ def add_job_by_date(func: Any, date_time: datetime, args: list | tuple, user_tg_
       :param user_tg_id: telegram id of a user, who initiated the task
       :return: Job
       """
-    # remove_all_user_jobs(user_tg_id)
+    remove_all_user_jobs(user_tg_id)
+
     job_id = f"{func.__name__}|{datetime.now().strftime('%d-%m-%Y_%H:%M:%S')}|{user_tg_id}"
     bot_logger.debug(f"Adding dated job: {job_id} for user {user_tg_id}")
 
