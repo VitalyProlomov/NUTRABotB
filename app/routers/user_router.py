@@ -132,7 +132,7 @@ async def set_webinar_time_date(callback: CallbackQuery, bot : Bot):
     webinar_date = await rq.get_user_webinar_date(user_tg_id)
 
     # Check for buttons to be active - must happen before or other logic
-    # Removed button expring
+    # Removed button expiring
 
     # if webinar_date is not None and utils.did_webinar_date_come(webinar_date):
     #     return # buttons expired

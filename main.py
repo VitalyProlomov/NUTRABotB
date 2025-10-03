@@ -1,4 +1,5 @@
 import asyncio
+from datetime import datetime, time
 import logging
 from aiogram import Bot, Dispatcher
 
@@ -7,7 +8,7 @@ from config import TOKEN
 from app.routers.user_router import router1
 from app.routers.admin_router import admin_router
 from app.database.models import async_main
-from app.utils import scheduler, emergency_scheduler_restart
+from app.utils import scheduler, emergency_scheduler_restart, daily_message_sending_shift, MOSCOW_TZ
 
 from app.logger import bot_logger
 
@@ -36,9 +37,24 @@ async def on_startup():
 
         bot_logger.debug("Startup completed successfully")
 
+        now = datetime.now(MOSCOW_TZ)
+        deadline = datetime.combine(
+            now.date(),
+            time(23, 45),
+            tzinfo=MOSCOW_TZ
+        )
+        # scheduler.add_job(func=func,
+        #                   trigger='date',
+        #                   next_run_time=date_time,
+        #                   args=args,
+        #                   id=job_id,
+        #                   replace_existing=True)
+        scheduler.add_job(func=daily_message_sending_shift, trigger="date",next_run_time=deadline)
+
     except Exception as ex:
         bot_logger.error(None, "Startup initialization", ex)
         raise
+
 
 
 async def main():

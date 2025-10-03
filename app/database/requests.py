@@ -70,6 +70,24 @@ async def get_all_users_ids():
         return result.scalars().all()
 
 
+async def get_users_id_with_webinar_time_and_date(time: str, webinar_date : date):
+    async with async_session() as session:
+        result = await session.execute(
+            select(User.tg_id)
+            .where(User.webinar_time == time)
+            .where(User.webinar_date == webinar_date)
+        )
+        return result.scalars().all()
+
+
+async def get_users_with_no_webinar_time_selected():
+    async with async_session() as session:
+        result = await session.execute(
+            select(User.tg_id)
+            .where(User.webinar_time == None)
+        )
+        return result.scalars().all()
+
 async def change_webinar_time(time, tg_id):
     async with async_session() as session:
         res = await session.execute(select(User).where(User.tg_id == tg_id))
@@ -198,6 +216,7 @@ async def get_lesson_message_info(selling_message_order: int):
 
         res = res.scalar_one_or_none()
         return res
+
 
 async def initialize_lesson_messages():
     async with async_session() as session:
@@ -376,7 +395,8 @@ async def initialize_first_offer_messages():
         if result.scalars().first() is None:
             initial_messages = [
                 FirstOfferMessages(text=texts.FIRST_OFFER_MESSAGE_1,
-                                   order_of_sending=1, delay_time_seconds=timings.FIRST_OFFER_MESSAGE_1_TIME,  # + кружок
+                                   order_of_sending=1, delay_time_seconds=timings.FIRST_OFFER_MESSAGE_1_TIME,
+                                   # + кружок
                                    image=utils.read_file_as_binary(
                                        r"assets/images/first_offer/first_offer_1_photo.jpg"),
                                    buttons={
@@ -553,6 +573,7 @@ async def get_all_done_users_ids():
         result = await session.execute(select(User.tg_id).where(User.cur_stage == UserStage.DONE))
         return result.scalars().all()
 
+
 async def get_all_not_done_users_ids():
     async with async_session() as session:
         # Had mistake here - took User.id instead of User.tg_id
@@ -644,9 +665,9 @@ async def count_users_who_got_flag(flag_index: int):
         count = (res.scalars().all())
         return len(count)
 
+
 async def count_users_with_chosen_time(time):
     async with async_session() as session:
-
         res = await session.execute(select(User).where(User.webinar_time == time))
 
         count = (res.scalars().all())

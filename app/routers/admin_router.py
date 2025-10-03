@@ -5,17 +5,23 @@ from aiogram import Router, Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
+from datetime import datetime
+
 from app.filters.admin_filter import IsAdminFilter
 from app.middlewares import TestMiddleWare
 
 import app.keyboards.admin_keyboards as akb
 import app.database.requests as rq
 import app.routers.States as States
+from app.utils import shift_time_after, add_UNREMOVABLE_job_by_date_without_removing_other_user_tasks
+
+from app.logger import bot_logger
 
 admin_router = Router()
 admin_router.message.middleware(TestMiddleWare())
 
 admin_router.message.filter(IsAdminFilter())
+
 
 # In this file the handlers that are handling menu commands (specifically from admin
 # keyboard) must be defined in the top (before all the functions with the
@@ -28,14 +34,15 @@ admin_router.message.filter(IsAdminFilter())
 
 
 @admin_router.message(Command('admin'))
-async def admin_panel(message: Message, bot : Bot):
+async def admin_panel(message: Message, bot: Bot):
     keyboard = akb.admin_keyboard
 
     await message.reply("Admin Panel:", reply_markup=keyboard)
 
+
 # order matters
 @admin_router.message(F.text.lower() == "отмена")
-async def cancel(message: Message, state : FSMContext):
+async def cancel(message: Message, state: FSMContext):
     if await state.get_state() is not None:
         await state.clear()
         await message.answer("Процедура отменена", reply_markup=akb.admin_keyboard)
@@ -47,9 +54,10 @@ async def initialize_broadcast(message: Message, state: FSMContext):
     await state.clear()
     await state.set_state(States.BroadcastState.waiting_for_message)
     await message.reply("Пожалуйста, напишите сообщение, которое вы хотите разослать всем пользователям:\n"
-                                " (Или напишите ОТМЕНА для отмены рассылки)")
+                        " (Или напишите ОТМЕНА для отмены рассылки)")
 
     await state.set_state(States.BroadcastState.waiting_for_message)
+
 
 # order matters
 # @admin_router.message(F.text == "Изменить исходные дожимающие сообщения")
@@ -68,7 +76,6 @@ async def initialize_broadcast(message: Message, state: FSMContext):
 
 @admin_router.message(States.BroadcastState.waiting_for_message)
 async def process_broadcast_message(message: Message, state: FSMContext):
-
     # made it more universal - there is a function in the start for all
     # cancelling now
     # if message.text.lower() == 'отмена':
@@ -92,46 +99,64 @@ async def process_broadcast_message(message: Message, state: FSMContext):
 
 @admin_router.message(F.text == "Подтвердить ✅",
                       States.BroadcastState.waiting_for_confirmation)
-async def broadcast(message: Message, state: FSMContext, bot : Bot):
+async def broadcast(message: Message, state: FSMContext, bot: Bot):
     broadcast_message = await state.get_data()
     print(f'{broadcast_message}\n\n')
+    bot_logger.admin_action("broadcast")
 
-    await message.answer(f"Рассылаем всем завершившим воронку пользователям"
+    await message.answer(f"Рассылаем всем пользователям"
                          f" сообщение:\n\n{States.BroadcastState.broadcast_message}",
                          parse_mode=ParseMode.HTML)
+
     users = await rq.get_all_users_ids()
     print(f'Users: {users}')
     length = len(users)
-    success_am = length
 
     for user_id in users:
-        try :
-            await bot.send_message(chat_id=user_id, text=broadcast_message['message'], parse_mode=ParseMode.HTML)
-        except Exception as e:
-            success_am -= 1
-            print(f'Failed to send message to user {user_id}: {e}')
-    await message.answer(f'Рассылка успешно отправлена {success_am} из {length} пользователей',
-                         reply_markup=akb.admin_keyboard)
+        date_time = shift_time_after(length, datetime.now())
+        add_UNREMOVABLE_job_by_date_without_removing_other_user_tasks(
+            func= send_broadcast_message,
+            date_time=date_time,
+            kwargs={"bot" : bot, "chat_id": user_id, "text": broadcast_message['message'], "parse_mode": ParseMode.HTML},
+            user_tg_id=user_id
+        )
+
+    # await message.answer(f'Рассылка успешно отправлена {success_am} из {length} пользователей',
+    #                      reply_markup=akb.admin_keyboard)
+    bot_logger.info(f"Broadcasting was set up for {length} users. " +
+                    f"\nBroadcast message: {broadcast_message['messsage']}")
     await state.clear()
+
+async def send_broadcast_message(bot : Bot, chat_id : int, text : str, parse_mode : str):
+    try :
+        await bot.send_message(chat_id=chat_id, text=text, parse_mode=parse_mode)
+        bot_logger.message_sent(user_id=chat_id, message_type="broadcast message")
+    except Exception as e:
+        bot_logger.error(user_id=chat_id, context=f'Failed to send message to user {chat_id}: {e}', error=e)
 
 @admin_router.message(F.text == "Отмена ❌",
                       States.BroadcastState.waiting_for_confirmation)
-async def broadcast(message: Message, state: FSMContext, bot : Bot):
+async def broadcast(message: Message, state: FSMContext, bot: Bot):
     await message.answer("Рассылка отменена", reply_markup=akb.admin_keyboard)
+    bot_logger.admin_action("Cancel broadcast")
     await state.clear()
+
 
 @admin_router.message(F.text == "Подсчет пользователей бота")
 async def count_users(message: Message, state: FSMContext):
     await state.clear()
+    bot_logger.admin_action("User Count")
     users = (await rq.get_all_users_ids())
     await message.answer(f'Всего вашим ботом воспользовались: {len(users)}')
+
 
 @admin_router.message(F.text == "Метрики")
 async def show_metrics(message: Message, state: FSMContext):
     await state.clear()
+    bot_logger.admin_action("Metrics")
+
     users = await rq.get_all_users_ids()
     users_count = len(users)
-
 
     lesson1 = await rq.count_users_who_did_press_lesson_himself_metric(1)
     lesson2 = await rq.count_users_who_did_press_lesson_himself_metric(2)
@@ -147,17 +172,17 @@ async def show_metrics(message: Message, state: FSMContext):
     await message.answer(f'''Метрики:
     - Всего пользователей: {users_count}
     -----------------
-    - Пользователей, получивших 1 вопрос: {flag_1_users}
-    - Пользователей, получивших 2 вопрос: {flag_2_users}
-    -----------------
     - Пользователей, перешедших на 1 урок по кнопке: {lesson1}
     - Пользователей, перешедших на 2 урок по кнопке: {lesson2}
     - Пользователей, перешедших на 3 урок по кнопке: {lesson3}
     -----------------
     - Пользователей, выбравших 12:00 : {time_12_00_users}
-    - - Пользователей, выбравших 19:00 : {time_19_00_users}
-    ''')
+    - Пользователей, выбравших 19:00 : {time_19_00_users}
+    -----------------
+    - Пользователей, получивших 1 вопрос: {flag_1_users}
+    - Пользователей, получивших 2 вопрос: {flag_2_users}
 
+    ''')
 
 # @admin_router.callback_query(F.data == "selling_message_1_option",
 #                              States.ChangingSellingMessagesState.waiting_for_message_order_choice)
@@ -202,16 +227,15 @@ async def show_metrics(message: Message, state: FSMContext):
 #         await message.answer(f'Успешно изменили {data['option_ind']} дожимающее сообщение на:'
 #                                    f' \n\n{data["message"]}',
 #                                    reply_markup=akb.admin_keyboard)
-    # except Exception as e:
-    #     print(e)
-    #     await message.answer(f'Не удалось изменить дожимающее сообщение, попробуйте снова или обратитесь к программисту для уточнения проблемы. '
-    #                          f'Покажите эту ошибку: {e.message}',
-    #                          reply_markup=akb.admin_keyboard)
-    await state.clear()
+# except Exception as e:
+#     print(e)
+#     await message.answer(f'Не удалось изменить дожимающее сообщение, попробуйте снова или обратитесь к программисту для уточнения проблемы. '
+#                          f'Покажите эту ошибку: {e.message}',
+#                          reply_markup=akb.admin_keyboard)
+# await state.clear()
 
-@admin_router.message(F.text == "Отмена ❌",
-                      States.ChangingSellingMessagesState.waiting_for_confirmation)
-async def broadcast(message: Message, state: FSMContext, bot : Bot):
-    await message.answer("Изменение отменено", reply_markup=akb.admin_keyboard)
-    await state.clear()
-
+# @admin_router.message(F.text == "Отмена ❌",
+#                       States.ChangingSellingMessagesState.waiting_for_confirmation)
+# async def broadcast(message: Message, state: FSMContext, bot : Bot):
+#     await message.answer("Изменение отменено", reply_markup=akb.admin_keyboard)
+#     await state.clear()

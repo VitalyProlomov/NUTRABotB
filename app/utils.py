@@ -5,13 +5,13 @@ from typing import Any, Optional
 
 from aiogram import Bot
 from aiogram.enums import ParseMode
-from aiogram.types import Message, User, InlineKeyboardMarkup, CallbackQuery, BufferedInputFile, FSInputFile
-from datetime import datetime, time, timedelta
+from aiogram.types import Message, User, InlineKeyboardMarkup, CallbackQuery, BufferedInputFile, FSInputFile, Chat
+from datetime import datetime, time, timedelta, date
 import json
 from zoneinfo import ZoneInfo
+import random
 
 from apscheduler.job import Job
-from sqlalchemy.testing import not_in_
 
 import app.database.models
 import main
@@ -30,6 +30,8 @@ scheduler = AsyncIOScheduler()
 MOSCOW_TZ = ZoneInfo("Europe/Moscow")
 
 import app.routers.user_router
+
+DO_NOT_REMOVE_TEXT : str = "DO NOT REMOVE"
 
 
 # # order important due to circular imports - BULLSHIT, try through main
@@ -670,6 +672,21 @@ def add_job_by_date(func: Any, date_time: datetime, args: list | tuple, user_tg_
                              id=job_id,
                              replace_existing=True)
 
+def add_UNREMOVABLE_job_by_date_without_removing_other_user_tasks(func: Any, date_time: datetime, kwargs: dict | None, user_tg_id: int) -> Job:
+    """
+    Works the same way as add_job_by_date, but it doesn't remove other jobs of user when initiated, and
+    it will not be removed by remove_all_user_jobs of the same user is initiated.
+    This job will only be removed automatically by scheduler.
+    """
+    job_id = f"{func.__name__}|{datetime.now().strftime('%d-%m-%Y_%H:%M:%S')}| {user_tg_id} | {DO_NOT_REMOVE_TEXT} "
+    bot_logger.debug(f"Adding dated job: {job_id} for user {user_tg_id}")
+
+    return scheduler.add_job(func=func,
+                             trigger='date',
+                             next_run_time=date_time,
+                             kwargs=kwargs,
+                             id=job_id,
+                             replace_existing=True)
 
 def remove_all_user_jobs(tg_id: int):
     """
@@ -685,6 +702,9 @@ def remove_all_user_jobs(tg_id: int):
     if jobs_to_remove:
         bot_logger.debug(f"Removing {len(jobs_to_remove)} jobs for user {tg_id}")
         for job_id in jobs_to_remove:
+            if "DO NOT REMOVE" in job_id:
+                bot_logger.info(f"job will not be removed due to its '{DO_NOT_REMOVE_TEXT}' nature")
+                continue
             scheduler.remove_job(job_id)
             bot_logger.debug(f"Removed job: {job_id}")
     else:
@@ -692,12 +712,13 @@ def remove_all_user_jobs(tg_id: int):
 
 
 def remove_job(job_id):
+    if DO_NOT_REMOVE_TEXT in job_id:
+        return
     try:
         scheduler.remove_job(job_id=job_id)
         bot_logger.debug(f"Removed specific job: {job_id}")
     except Exception as e:
         bot_logger.error(None, f"Removing job {job_id}", e)
-
 
 
 async def emergency_scheduler_restart(bot: Bot):
@@ -710,25 +731,43 @@ async def emergency_scheduler_restart(bot: Bot):
     not_done_users_id = await rq.get_all_not_done_users_ids()
 
     now = datetime.now()
-    for done_id in not_done_users_id:
+    for not_done_id in not_done_users_id:
         try:
+            mock_message = Message(
+                message_id=0,
+                date=now,
+                chat=Chat(
+                    id=not_done_id,
+                    type="private"
+                ),
+                from_user=User(
+                    id=not_done_id,
+                    is_bot=False,
+                    first_name="Fake_User",
+                    last_name="Scheduled",
+                    username="fake_user"
+                ),
+                text="This is a mock message"
+            )
             callback = CallbackQuery(
-                id=f'{done_id}-{datetime.now()}',
-                from_user=User(id=done_id,
+                id=f'{not_done_id}-{datetime.now()}',
+                from_user=User(id=not_done_id,
                                is_bot=False,
                                first_name="Fake_User_Callback",
                                last_name="Scheduled",
                                ),
                 chat_instance="simulated_instance",
-                data="selected_webinar_time_12:00"
+                data="selected_webinar_time_12:00",
+                message=mock_message
             )
-            time_chosen = await rq.get_user_webinar_time(done_id)
+
+            time_chosen = await rq.get_user_webinar_time(not_done_id)
             if time_chosen is None:
                 time_chosen = "12:00"
 
             start_time = datetime.combine(
                 # TODO
-                now.date(), # THIS DAY
+                now.date(),  # THIS DAY
                 time(hour=6, minute=0),  # At 06:00
                 tzinfo=MOSCOW_TZ
             )
@@ -746,9 +785,83 @@ async def emergency_scheduler_restart(bot: Bot):
                 user_tg_id=callback.from_user.id
                 # done_id=f"nextday9am_{chat_id}_{tomorrow_9am.timestamp()}"
             )
-            bot_logger.job_scheduled(done_id, f"send_webinar_reminder_{reminder_index}", str(job.next_run_time))
+            bot_logger.job_scheduled(not_done_id, f"send_webinar_reminder_{reminder_index}", str(job.next_run_time))
         except Exception as ex:
-            bot_logger.error(user_id= done_id, context="emergency startup", error= ex)
+            bot_logger.error(user_id=not_done_id, context="emergency startup", error=ex)
 
 
+def generate_random_number_for_n_users(users_amount: int):
+    seconds_amount = (users_amount // 30) * 5
+    return random.randint(-1 * seconds_amount // 2, seconds_amount // 2)
 
+
+def get_seconds_remainder(time_in_seconds: int):
+    if time_in_seconds < 0:
+        return -1 * get_seconds_remainder(time_in_seconds * -1)
+    return time_in_seconds % 60
+
+
+def get_minutes_from_seconds(time_in_seconds: int):
+    if time_in_seconds < 0:
+        return -1 * get_minutes_from_seconds(time_in_seconds * -1)
+    if (time_in_seconds // 60) >= 60:
+        return (time_in_seconds // 60) % 60
+
+    return time_in_seconds // 60
+
+
+def get_hours_from_seconds(time_in_seconds: int):
+    if time_in_seconds < 0:
+        return -1 * get_hours_from_seconds(time_in_seconds * -1)
+
+    return time_in_seconds // (60 * 60)
+
+def shift_time_after(users_amount: int, date_time: datetime) -> datetime:
+    seconds_shift = (users_amount // 30) * 5
+    seconds_shift = random.randint(1, seconds_shift + 1)
+    shifted_date_time = date_time + timedelta(seconds=seconds_shift)
+    return shifted_date_time
+
+def shift_time_around(users_amount: int, date_time: datetime) -> datetime:
+    seconds_shift = generate_random_number_for_n_users(users_amount)
+    shifted_date_time = date_time + timedelta(seconds=seconds_shift)
+    return shifted_date_time
+
+
+async def daily_message_sending_shift():
+    today = datetime.now().date()
+    ids_first_time = await rq.get_users_id_with_webinar_time_and_date(timings.FIRST_WEBINAR_TIME, today)
+
+    await shift_daily_message_for_selected_users(ids_first_time)
+
+
+    ids_second_time = await rq.get_users_id_with_webinar_time_and_date(timings.SECOND_WEBINAR_TIME, today)
+    await shift_daily_message_for_selected_users(ids_second_time)
+
+    ids_didnt_selected = await rq.get_users_with_no_webinar_time_selected()
+    await shift_daily_message_for_selected_users(ids_second_time)
+
+    tomorrow : date = today + timedelta(days=1)
+    tomorrow_date_time = datetime.combine(tomorrow, time(hour=23, minute=50))
+    add_job_by_date(daily_message_sending_shift, tomorrow_date_time, [],  user_tg_id=0)
+
+
+async def shift_daily_message_for_selected_users(users_ids):
+    for job in scheduler.get_jobs():
+        for user_id in users_ids:
+            if str(user_id) in job.id:
+                shifted_date_time = shift_time_around(
+                    len(users_ids),
+                    date_time=datetime.combine(
+                        date=datetime.now().date(),
+                        time=time(hour=23, minute=59)
+                    )
+                )
+
+                # job.reschedule(trigger=)
+                job.reschedule(
+                    trigger='date',
+                    next_run_time=shifted_date_time
+                )
+
+                bot_logger.info(f"Rescheduled job | {job} | onto  {shifted_date_time}")

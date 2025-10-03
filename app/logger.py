@@ -45,6 +45,9 @@ class BotLogger:
         """Log database operations"""
         self.logger.info(f"💾 DATABASE - User {user_id} - {operation} - {details}")
 
+    def admin_action(self, operation):
+        self.logger.info(f"Addmin initiated {operation}")
+
     def info(self, info : str):
         self.logger.info(info)
 
