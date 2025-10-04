@@ -139,7 +139,6 @@ async def set_webinar_time_date(callback: CallbackQuery, bot : Bot):
 
     utils.remove_all_user_jobs(tg_id=callback.from_user.id)
     bot_logger.job_executed(user_id=user_tg_id, job_name="remove_all_user_jobs")
-    print(callback.from_user.id)
 
     if callback.from_user.first_name != "Fake_User_Callback" or callback.from_user.last_name != "Scheduled":
         await rq.add_choose_time_himself_metric(user_tg_id)
@@ -232,7 +231,7 @@ async def continue_with_final_selling_offer(callback: CallbackQuery, bot : Bot):
     await rq.reset_webinar_date_time(callback.from_user.id)
     bot_logger.job_scheduled(user_id=callback.from_user.id, job_name="reset_webinar_date_time", execution_time="immediate")
 
-
+    await utils.send_final_offer_message(bot, callback, 1)
 
 # async def edit_subscribe_message(message: Message, bot: Bot):
 #     await message.edit_text('Добро пожаловать в НУТРА Бот. Не забудьте заглянуть на наш сайт с лучшими нутрициологическими продуктами '
