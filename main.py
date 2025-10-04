@@ -56,8 +56,6 @@ async def on_startup():
         bot_logger.error(None, "Startup initialization", ex)
         raise
 
-
-
 async def main():
     bot_logger.info("Starting Telegram bot application")
 
@@ -115,3 +113,4 @@ if __name__ == '__main__':
     except Exception as e:
         bot_logger.error(None, "Application crashed", e)
         print(f'Critical error: {e}')
+
