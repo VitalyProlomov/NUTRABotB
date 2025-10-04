@@ -800,7 +800,6 @@ def get_seconds_remainder(time_in_seconds: int):
         return -1 * get_seconds_remainder(time_in_seconds * -1)
     return time_in_seconds % 60
 
-
 def get_minutes_from_seconds(time_in_seconds: int):
     if time_in_seconds < 0:
         return -1 * get_minutes_from_seconds(time_in_seconds * -1)
@@ -808,7 +807,6 @@ def get_minutes_from_seconds(time_in_seconds: int):
         return (time_in_seconds // 60) % 60
 
     return time_in_seconds // 60
-
 
 def get_hours_from_seconds(time_in_seconds: int):
     if time_in_seconds < 0:
@@ -830,38 +828,38 @@ def shift_time_around(users_amount: int, date_time: datetime) -> datetime:
 
 async def daily_message_sending_shift():
     today = datetime.now().date()
-    ids_first_time = await rq.get_users_id_with_webinar_time_and_date(timings.FIRST_WEBINAR_TIME, today)
-
-    await shift_daily_message_for_selected_users(ids_first_time)
-
-
-    ids_second_time = await rq.get_users_id_with_webinar_time_and_date(timings.SECOND_WEBINAR_TIME, today)
-    await shift_daily_message_for_selected_users(ids_second_time)
-
-    ids_didnt_selected = await rq.get_users_with_no_webinar_time_selected()
-    await shift_daily_message_for_selected_users(ids_second_time)
-
     tomorrow : date = today + timedelta(days=1)
+
+    action_date_time = datetime.combine(
+        date=tomorrow,
+        time=time(hour=6, minute=0))
+    ids_first_time = await rq.get_users_id_with_webinar_time_and_date(timings.FIRST_WEBINAR_TIME, tomorrow)
+    await shift_daily_message_for_selected_users(ids_first_time, action_date_time=action_date_time)
+
+    action_date_time = datetime.combine(
+        date=tomorrow,
+        time=time(hour=13, minute=0))
+    ids_second_time = await rq.get_users_id_with_webinar_time_and_date(timings.SECOND_WEBINAR_TIME, tomorrow)
+    await shift_daily_message_for_selected_users(ids_second_time, action_date_time)
+
+    action_date_time = datetime.combine(
+        date=datetime.now().date(),
+        time=time(hour=23, minute=59))
+    ids_didnt_selected = await rq.get_users_with_no_webinar_time_selected()
+    await shift_daily_message_for_selected_users(ids_didnt_selected, action_date_time)
+
     tomorrow_date_time = datetime.combine(tomorrow, time(hour=23, minute=50))
-    add_job_by_date(daily_message_sending_shift, tomorrow_date_time, [],  user_tg_id=0)
+    add_job_by_date(daily_message_sending_shift, tomorrow_date_time, [], user_tg_id=1234567890)
 
-
-async def shift_daily_message_for_selected_users(users_ids):
+async def shift_daily_message_for_selected_users(users_ids, action_date_time : datetime):
     for job in scheduler.get_jobs():
         for user_id in users_ids:
             if str(user_id) in job.id:
                 shifted_date_time = shift_time_around(
                     len(users_ids),
-                    date_time=datetime.combine(
-                        date=datetime.now().date(),
-                        time=time(hour=23, minute=59)
-                    )
+                    date_time=action_date_time
                 )
 
-                # job.reschedule(trigger=)
-                job.reschedule(
-                    trigger='date',
-                    next_run_time=shifted_date_time
-                )
+                add_job_by_date(func=job.func,date_time=shifted_date_time,args=job.args, user_tg_id= user_id)
 
                 bot_logger.info(f"Rescheduled job | {job} | onto  {shifted_date_time}")

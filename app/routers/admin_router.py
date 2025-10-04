@@ -124,7 +124,7 @@ async def broadcast(message: Message, state: FSMContext, bot: Bot):
     # await message.answer(f'Рассылка успешно отправлена {success_am} из {length} пользователей',
     #                      reply_markup=akb.admin_keyboard)
     bot_logger.info(f"Broadcasting was set up for {length} users. " +
-                    f"\nBroadcast message: {broadcast_message['messsage']}")
+                    f"\nBroadcast message: {broadcast_message['message']}")
     await state.clear()
 
 async def send_broadcast_message(bot : Bot, chat_id : int, text : str, parse_mode : str):

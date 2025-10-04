@@ -40,7 +40,7 @@ async def on_startup():
         now = datetime.now(MOSCOW_TZ)
         deadline = datetime.combine(
             now.date(),
-            time(23, 45),
+            time(hour=23, minute=10),
             tzinfo=MOSCOW_TZ
         )
         # scheduler.add_job(func=func,
@@ -50,6 +50,7 @@ async def on_startup():
         #                   id=job_id,
         #                   replace_existing=True)
         scheduler.add_job(func=daily_message_sending_shift, trigger="date",next_run_time=deadline)
+        bot_logger.info(f"[Custom log] scheduled job daily_message_sending_shift for {deadline}")
 
     except Exception as ex:
         bot_logger.error(None, "Startup initialization", ex)
@@ -61,7 +62,8 @@ async def main():
     bot_logger.info("Starting Telegram bot application")
 
     try:
-        # timings.test_mode()
+        timings.test_mode()
+        bot_logger.info("Test mode turned on")
 
         await async_main()
         bot_logger.debug("Database initialized")
