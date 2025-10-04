@@ -8,7 +8,7 @@ class BroadcastState(StatesGroup):
     waiting_for_message = State()
     waiting_for_confirmation = State()
 
-    broadcast_message : string
+    broadcast_message : str
 
     # def all_states(self):
     #     return list(self.__states__.values())

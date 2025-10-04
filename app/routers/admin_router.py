@@ -1,3 +1,5 @@
+from csv import excel
+
 from aiogram import F
 from aiogram.enums import ParseMode
 from aiogram.filters import Command
@@ -112,17 +114,24 @@ async def broadcast(message: Message, state: FSMContext, bot: Bot):
     print(f'Users: {users}')
     length = len(users)
 
-    for user_id in users:
-        date_time = shift_time_after(length, datetime.now())
-        add_UNREMOVABLE_job_by_date_without_removing_other_user_tasks(
-            func= send_broadcast_message,
-            date_time=date_time,
-            kwargs={"bot" : bot, "chat_id": user_id, "text": broadcast_message['message'], "parse_mode": ParseMode.HTML},
-            user_tg_id=user_id
-        )
 
-    # await message.answer(f'Рассылка успешно отправлена {success_am} из {length} пользователей',
-    #                      reply_markup=akb.admin_keyboard)
+    for user_id in users:
+        try:
+            date_time = shift_time_after(length, datetime.now())
+            add_UNREMOVABLE_job_by_date_without_removing_other_user_tasks(
+                func= send_broadcast_message,
+                date_time=date_time,
+                kwargs={"bot" : bot, "chat_id": user_id, "text": broadcast_message['message'], "parse_mode": ParseMode.HTML},
+                user_tg_id=user_id
+            )
+        except Exception as ex:
+            bot_logger.error(user_id, "error araised when tries to schedule task for broadcast", ex)
+
+
+    await message.answer(f'Рассылка успешно запланирована для {length} пользователей',
+                             reply_markup=akb.admin_keyboard)
+
+
     bot_logger.info(f"Broadcasting was set up for {length} users. " +
                     f"\nBroadcast message: {broadcast_message['message']}")
     await state.clear()
