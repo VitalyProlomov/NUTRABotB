@@ -62,7 +62,7 @@ async def main():
     bot_logger.info("Starting Telegram bot application")
 
     try:
-        timings.test_mode()
+        # timings.test_mode()
         bot_logger.info("Test mode turned on")
 
         await async_main()

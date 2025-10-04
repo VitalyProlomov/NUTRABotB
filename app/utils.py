@@ -843,7 +843,7 @@ async def daily_message_sending_shift():
     await shift_daily_message_for_selected_users(ids_second_time, action_date_time)
 
     action_date_time = datetime.combine(
-        date=datetime.now().date(),
+        date=today,
         time=time(hour=23, minute=59))
     ids_didnt_selected = await rq.get_users_with_no_webinar_time_selected()
     await shift_daily_message_for_selected_users(ids_didnt_selected, action_date_time)
