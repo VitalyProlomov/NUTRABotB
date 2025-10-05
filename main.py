@@ -113,4 +113,3 @@ if __name__ == '__main__':
     except Exception as e:
         bot_logger.error(None, "Application crashed", e)
         print(f'Critical error: {e}')
-
