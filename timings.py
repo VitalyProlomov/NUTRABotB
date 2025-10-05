@@ -1,5 +1,3 @@
-from datetime import datetime, time, timedelta
-from zoneinfo import ZoneInfo
 
 import main
 
@@ -54,7 +52,6 @@ def test_mode():
     global QUESTION_MESSAGE_2_TIME  # 3 days and 20 hours
     global FINAL_OFFER_MESSAGE_1_TIME
     global FINAL_OFFER_MESSAGE_2_TIME
-    global TODAY_2359
 
     main.TEST_MODE = True
 

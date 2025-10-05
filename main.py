@@ -40,7 +40,7 @@ async def on_startup():
         now = datetime.now(MOSCOW_TZ)
         deadline = datetime.combine(
             now.date(),
-            time(hour=23, minute=10),
+            time(hour=23, minute=30),
             tzinfo=MOSCOW_TZ
         )
         # scheduler.add_job(func=func,
@@ -82,13 +82,20 @@ async def main():
         scheduler.start()
         bot_logger.debug("Scheduler started")
 
-        try:
-            a = await rq.get_all_not_done_users_ids()
+        # EMERGENCY SCHEDULER RESTART BLOCK
+        # --------------------------------
+        # try:
+        #     a = await rq.get_all_not_done_users_ids()
+        #
+        #     bot_logger.info(f"Not done Users in db: {len(a)}")
+        #     await emergency_scheduler_restart(bot=main_bot)
+        # except Exception as ex:
+        #     bot_logger.error(None, "emergency scheduler failed", ex)
+        # -----------------------
 
-            bot_logger.info(f"Not done Users in db: {len(a)}")
-            await emergency_scheduler_restart(bot=main_bot)
-        except Exception as ex:
-            bot_logger.error(None, "emergency scheduler failed", ex)
+
+        # BUTTON SENDING BLOCK
+
         # await app.utils.send_button_message_to_channel(main_bot, text=texts.PINNED_MESSAGE)
 
         bot_logger.info("Bot starting to poll...")
