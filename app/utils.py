@@ -791,7 +791,7 @@ async def emergency_scheduler_restart(bot: Bot):
 
 
 def generate_random_number_for_n_users(users_amount: int):
-    seconds_amount = (users_amount // 30) * 5
+    seconds_amount = (users_amount // 15) * 5
     return random.randint(-1 * seconds_amount // 2, seconds_amount // 2)
 
 
@@ -815,7 +815,7 @@ def get_hours_from_seconds(time_in_seconds: int):
     return time_in_seconds // (60 * 60)
 
 def shift_time_after(users_amount: int, date_time: datetime) -> datetime:
-    seconds_shift = (users_amount // 30) * 5
+    seconds_shift = (users_amount // 15) * 5
     seconds_shift = random.randint(1, seconds_shift + 1)
     shifted_date_time = date_time + timedelta(seconds=seconds_shift)
     return shifted_date_time
