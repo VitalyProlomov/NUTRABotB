@@ -826,7 +826,20 @@ def shift_time_around(users_amount: int, date_time: datetime) -> datetime:
     return shifted_date_time
 
 
-async def daily_message_sending_shift():
+async def daily_deadline_message_shift():
+    today = datetime.now().date()
+
+    action_date_time = datetime.combine(
+        date=today,
+        time=time(hour=23, minute=59))
+    ids_didnt_selected = await rq.get_users_with_no_webinar_time_selected()
+    await shift_daily_message_for_selected_users(ids_didnt_selected, action_date_time)
+
+    tomorrow: date = today + timedelta(days=1)
+    tomorrow_date_time = datetime.combine(tomorrow, time(hour=0, minute=10))
+    add_job_by_date(daily_webinar_reminder_message_shift, tomorrow_date_time, [], user_tg_id=1234567890)
+
+async def daily_webinar_reminder_message_shift():
     today = datetime.now().date()
     tomorrow : date = today + timedelta(days=1)
 
@@ -842,14 +855,11 @@ async def daily_message_sending_shift():
     ids_second_time = await rq.get_users_id_with_webinar_time_and_date(timings.SECOND_WEBINAR_TIME, tomorrow)
     await shift_daily_message_for_selected_users(ids_second_time, action_date_time)
 
-    action_date_time = datetime.combine(
-        date=today,
-        time=time(hour=23, minute=59))
-    ids_didnt_selected = await rq.get_users_with_no_webinar_time_selected()
-    await shift_daily_message_for_selected_users(ids_didnt_selected, action_date_time)
+    # Since this function is called at 00:10, we use today`s date
+    tooday_date_time: datetime = datetime.combine(today, time(hour=23, minute=50))
+    add_job_by_date(daily_deadline_message_shift, tooday_date_time, [], user_tg_id=1234567890)
 
-    tomorrow_date_time = datetime.combine(tomorrow, time(hour=23, minute=50))
-    add_job_by_date(daily_message_sending_shift, tomorrow_date_time, [], user_tg_id=1234567890)
+
 
 async def shift_daily_message_for_selected_users(users_ids, action_date_time : datetime):
     for job in scheduler.get_jobs():
