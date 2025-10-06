@@ -54,9 +54,6 @@ async def on_startup():
         # bot_logger.info(f"[Custom log] scheduled job daily_message_sending_shift for {deadline}")
 
 
-        # Emergency shuffle (at night)
-        await daily_webinar_reminder_message_shift()
-
     except Exception as ex:
         bot_logger.error(None, "Startup initialization", ex)
         raise
@@ -84,19 +81,27 @@ async def main():
         dp.include_router(admin_router)
         bot_logger.debug("Routers configured")
 
+
+
         scheduler.start()
         bot_logger.debug("Scheduler started")
 
+
+
+
+
         # EMERGENCY SCHEDULER RESTART BLOCK
         # --------------------------------
-        # try:
-        #     a = await rq.get_all_not_done_users_ids()
-        #
-        #     bot_logger.info(f"Not done Users in db: {len(a)}")
-        #     await emergency_scheduler_restart(bot=main_bot)
-        # except Exception as ex:
-        #     bot_logger.error(None, "emergency scheduler failed", ex)
+        try:
+            a = await rq.get_all_not_done_users_ids()
+
+            bot_logger.info(f"Not done Users in db: {len(a)}")
+            await emergency_scheduler_restart(bot=main_bot)
+        except Exception as ex:
+            bot_logger.error(None, "emergency scheduler failed", ex)
         # -----------------------
+        # Emergency shuffle (at night)
+        await daily_webinar_reminder_message_shift()
 
 
         # BUTTON SENDING BLOCK
