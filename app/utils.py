@@ -841,18 +841,17 @@ async def daily_deadline_message_shift():
 
 async def daily_webinar_reminder_message_shift():
     today = datetime.now().date()
-    tomorrow : date = today + timedelta(days=1)
 
     action_date_time = datetime.combine(
-        date=tomorrow,
+        date=today,
         time=time(hour=6, minute=0))
-    ids_first_time = await rq.get_users_id_with_webinar_time_and_date(timings.FIRST_WEBINAR_TIME, tomorrow)
+    ids_first_time = await rq.get_users_id_with_webinar_time_and_date(timings.FIRST_WEBINAR_TIME, today)
     await shift_daily_message_for_selected_users(ids_first_time, action_date_time=action_date_time)
 
     action_date_time = datetime.combine(
-        date=tomorrow,
+        date=today,
         time=time(hour=13, minute=0))
-    ids_second_time = await rq.get_users_id_with_webinar_time_and_date(timings.SECOND_WEBINAR_TIME, tomorrow)
+    ids_second_time = await rq.get_users_id_with_webinar_time_and_date(timings.SECOND_WEBINAR_TIME, today)
     await shift_daily_message_for_selected_users(ids_second_time, action_date_time)
 
     # Since this function is called at 00:10, we use today`s date
