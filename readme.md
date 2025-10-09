@@ -1,5 +1,5 @@
 To start the bot, run main.py
-
+2ND BOT VERSION
 
 IMPORTANT NOTES:
 ----------------
