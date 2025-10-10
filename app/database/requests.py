@@ -88,6 +88,14 @@ async def get_users_with_no_webinar_time_selected():
         )
         return result.scalars().all()
 
+async def get_users_with_no_webinar_day_selected():
+    async with async_session() as session:
+        result = await session.execute(
+            select(User.tg_id)
+            .where(User.webinar_date == None)
+        )
+        return result.scalars().all()
+
 
 async def change_webinar_time(time, tg_id):
     async with async_session() as session:

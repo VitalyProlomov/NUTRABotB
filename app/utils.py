@@ -259,7 +259,7 @@ async def add_timer_for_webinar_reminders(bot: Bot, callback: CallbackQuery, rem
 
         time_chosen = await rq.get_user_webinar_time(callback.from_user.id)
         if time_chosen is None:
-            time_chosen = "12:00"
+            time_chosen = "19:00"
 
         start_time = datetime.combine(
             now.date() + timedelta(days=1),  # Next day
@@ -873,7 +873,7 @@ async def daily_deadline_message_shift():
     add_job_by_date(daily_webinar_reminder_message_shift, tomorrow_date_time, [], user_tg_id=1234567890)
 
 
-async def daily_webinar_reminder_message_shift():
+async def daily_webinar_reminder_message_shift(emergency_mode = False):
     today = datetime.now().date()
 
     action_date_time = datetime.combine(
@@ -887,6 +887,13 @@ async def daily_webinar_reminder_message_shift():
         time=time(hour=13, minute=0))
     ids_second_time = await rq.get_users_id_with_webinar_time_and_date(timings.SECOND_WEBINAR_TIME, today)
     await shift_daily_message_for_selected_users(ids_second_time, action_date_time)
+
+    if emergency_mode:
+        action_date_time = datetime.combine(
+            date=today,
+            time=time(hour=13, minute=0))
+        ids_none = await rq.get_users_with_no_webinar_day_selected()
+        await shift_daily_message_for_selected_users(ids_none, action_date_time)
 
     # Since this function is called at 00:10, we use today`s date
     tooday_date_time: datetime = datetime.combine(today, time(hour=23, minute=50))
