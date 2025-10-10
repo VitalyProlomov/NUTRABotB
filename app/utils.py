@@ -31,7 +31,7 @@ MOSCOW_TZ = ZoneInfo("Europe/Moscow")
 
 import app.routers.user_router
 
-DO_NOT_REMOVE_TEXT : str = "DO NOT REMOVE"
+DO_NOT_REMOVE_TEXT: str = "DO NOT REMOVE"
 
 
 # # order important due to circular imports - BULLSHIT, try through main
@@ -79,8 +79,6 @@ async def add_timer_for_lessons_message(lesson_mes_order: int, message: Message,
         bot_logger.error(user_id, "Fetching lesson message info", e)
         return
 
-    # selling_message = await rq.get_lesson_message_info(selling_mes_order)
-
     delay_seconds = lesson_message.delay_time_seconds  # * 60
     job = add_job_by_delay(send_lesson_message,
                            delay_seconds=delay_seconds,
@@ -125,6 +123,7 @@ async def send_lesson_message(lesson_message_order: int, message: Message, bot: 
             image_file = get_photo_from_database(lesson_info)
             await send_message_with_photo(bot, message.chat.id, image_file, lesson_info.text, reply_markup)
             bot_logger.message_sent(user_id, f"lesson_message_{lesson_message_order}", "with photo")
+        # [09.10] I do not understand what is the purpose of this condition below..
         if lesson_message_order != 1:
             remove_all_user_jobs(message.chat.id)
             # await message.edit_reply_markup(reply_markup=None)
@@ -139,7 +138,7 @@ async def send_lesson_message(lesson_message_order: int, message: Message, bot: 
 
 async def add_timer_for_webinar_time_choice_reminder(bot: Bot, message):
     user_id = message.chat.id
-    delay_seconds = timings.WEBINAR_REMINDER_0_AUTO_TIME  # * 60
+    delay_seconds = timings.WEBINAR_REMINDER_0_AUTO_TIME
     bot_logger.user_action(user_id, "Scheduling webinar time choice reminder", f"Delay: {delay_seconds}s")
 
     job = add_job_by_delay(send_webinar_time_choice_reminder,
@@ -171,7 +170,7 @@ async def send_webinar_time_choice_reminder(bot: Bot, message: Message):
                        last_name="Scheduled",
                        ),
         chat_instance="simulated_instance",
-        data="selected_webinar_time_12:00",
+        data="selected_webinar_time_19:00",
         message=message
     )
 
@@ -225,9 +224,9 @@ async def send_subscription_reminder(bot: Bot, index: int, message: Message):
 
     if index == 1:
         await bot.send_message(chat_id=message.chat.id, text=texts.SUBSCRIPTION_REMINDER_1,
-                               reply_markup=gkb.lesson_1_keyboard,
+                               reply_markup=gkb.choose_time_keyboard,
                                parse_mode=ParseMode.HTML)
-        delay_seconds = timings.SUBSCRIPTION_REMINDER_2_TIME  # * 60
+        delay_seconds = timings.SUBSCRIPTION_REMINDER_2_TIME
         add_job_by_delay(send_subscription_reminder,
                          delay_seconds=delay_seconds,
                          args=(bot, 2, message),
@@ -237,7 +236,7 @@ async def send_subscription_reminder(bot: Bot, index: int, message: Message):
         return
     if index == 2:
         await bot.send_message(chat_id=message.chat.id, text=texts.SUBSCRIPTION_REMINDER_2,
-                               reply_markup=gkb.lesson_1_keyboard,
+                               reply_markup=gkb.choose_time_keyboard,
                                parse_mode=ParseMode.HTML)
         delay_seconds = await rq.get_lesson_message_info(1)
         delay_seconds = delay_seconds.delay_time_seconds  # * 60
@@ -257,6 +256,7 @@ async def add_timer_for_webinar_reminders(bot: Bot, callback: CallbackQuery, rem
 
     # set the date of message for tomorrow
     if reminder_index == 2:
+
         time_chosen = await rq.get_user_webinar_time(callback.from_user.id)
         if time_chosen is None:
             time_chosen = "12:00"
@@ -352,8 +352,32 @@ async def send_webinar_reminder(bot: Bot, callback: CallbackQuery, reminder_inde
         bot_logger.job_executed(user_id, f"send_webinar_reminder_{reminder_index}", "completed")
         return
 
+    if reminder_index == 1:
+        await add_timer_for_lessons_snippet(bot, callback)
+        return
+
     await add_timer_for_webinar_reminders(bot, callback, reminder_index + 1)
     bot_logger.job_executed(user_id, f"send_webinar_reminder_{reminder_index}", "completed")
+
+
+async def add_timer_for_lessons_snippet(bot: Bot, callback: CallbackQuery):
+    user_id = callback.from_user.id
+
+    add_job_by_delay(func=send_lessons_snippets_message, delay_seconds=timings.LESSONS_SNIPPETS_TIME,
+                     args=[bot, callback], user_tg_id=user_id)
+
+
+async def send_lessons_snippets_message(bot: Bot, callback: CallbackQuery):
+    image_path = Path("assets/images/lessons_snippets_photo.jpg")
+    photo = FSInputFile(image_path)
+    await send_message_with_photo(
+        bot=bot,
+        chat_id=callback.from_user.id,
+        photo=photo,
+        text=texts.LESSON_SNIPPET_MESSAGE,
+        mes_keyboard=gkb.lessons_snippets_keyboard
+    )
+    await add_timer_for_webinar_reminders(bot, callback, 2)
 
 
 async def set_flag_1(user_id: int):
@@ -397,7 +421,7 @@ async def restart_webinar_messages(message: Message, bot: Bot):
     # await set_flag_1(callback.from_user.id)
     # Re-expires the buttons, also needed for setting 19:00 by default (if user doesn't choose anything)
     await rq.reset_webinar_date_time(user_id)
-    await app.utils.send_lesson_message(3, message=message, bot=bot)
+    await app.utils.send_lesson_message(1, message=message, bot=bot)
     bot_logger.job_executed(user_id, "restart_webinar_messages", "completed")
 
 
@@ -470,10 +494,12 @@ async def send_question_2_message(bot: Bot, message: Message) -> None:
     bot_logger.job_executed(user_id, "send_question_2_message", "started")
 
     await set_flag_2(user_id)
-    await bot.send_message(chat_id=user_id,
-                           text=texts.QUESTION_MESSAGE_2,
-                           reply_markup=gkb.question_2_keyboard,
-                           parse_mode=ParseMode.HTML)
+    await bot.send_message(
+        chat_id=user_id,
+        text=texts.QUESTION_MESSAGE_2,
+        reply_markup=gkb.question_2_keyboard,
+        parse_mode=ParseMode.HTML
+    )
     bot_logger.message_sent(user_id, "question_2_message", "sent")
 
     delay_seconds = timings.RESTART_WEBINAR_MESSAGES_TIME  # * 60
@@ -672,7 +698,9 @@ def add_job_by_date(func: Any, date_time: datetime, args: list | tuple, user_tg_
                              id=job_id,
                              replace_existing=True)
 
-def add_UNREMOVABLE_job_by_date_without_removing_other_user_tasks(func: Any, date_time: datetime, kwargs: dict | None, user_tg_id: int) -> Job:
+
+def add_UNREMOVABLE_job_by_date_without_removing_other_user_tasks(func: Any, date_time: datetime, kwargs: dict | None,
+                                                                  user_tg_id: int) -> Job:
     """
     Works the same way as add_job_by_date, but it doesn't remove other jobs of user when initiated, and
     it will not be removed by remove_all_user_jobs of the same user is initiated.
@@ -687,6 +715,7 @@ def add_UNREMOVABLE_job_by_date_without_removing_other_user_tasks(func: Any, dat
                              kwargs=kwargs,
                              id=job_id,
                              replace_existing=True)
+
 
 def remove_all_user_jobs(tg_id: int):
     """
@@ -800,6 +829,7 @@ def get_seconds_remainder(time_in_seconds: int):
         return -1 * get_seconds_remainder(time_in_seconds * -1)
     return time_in_seconds % 60
 
+
 def get_minutes_from_seconds(time_in_seconds: int):
     if time_in_seconds < 0:
         return -1 * get_minutes_from_seconds(time_in_seconds * -1)
@@ -808,17 +838,20 @@ def get_minutes_from_seconds(time_in_seconds: int):
 
     return time_in_seconds // 60
 
+
 def get_hours_from_seconds(time_in_seconds: int):
     if time_in_seconds < 0:
         return -1 * get_hours_from_seconds(time_in_seconds * -1)
 
     return time_in_seconds // (60 * 60)
 
+
 def shift_time_after(users_amount: int, date_time: datetime) -> datetime:
     seconds_shift = (users_amount // 15) * 5
     seconds_shift = random.randint(1, seconds_shift + 1)
     shifted_date_time = date_time + timedelta(seconds=seconds_shift)
     return shifted_date_time
+
 
 def shift_time_around(users_amount: int, date_time: datetime) -> datetime:
     seconds_shift = generate_random_number_for_n_users(users_amount)
@@ -838,6 +871,7 @@ async def daily_deadline_message_shift():
     tomorrow: date = today + timedelta(days=1)
     tomorrow_date_time = datetime.combine(tomorrow, time(hour=0, minute=10))
     add_job_by_date(daily_webinar_reminder_message_shift, tomorrow_date_time, [], user_tg_id=1234567890)
+
 
 async def daily_webinar_reminder_message_shift():
     today = datetime.now().date()
@@ -859,8 +893,7 @@ async def daily_webinar_reminder_message_shift():
     add_job_by_date(daily_deadline_message_shift, tooday_date_time, [], user_tg_id=1234567890)
 
 
-
-async def shift_daily_message_for_selected_users(users_ids, action_date_time : datetime):
+async def shift_daily_message_for_selected_users(users_ids, action_date_time: datetime):
     for job in scheduler.get_jobs():
         for user_id in users_ids:
             if str(user_id) in job.id:
@@ -869,6 +902,6 @@ async def shift_daily_message_for_selected_users(users_ids, action_date_time : d
                     date_time=action_date_time
                 )
 
-                add_job_by_date(func=job.func,date_time=shifted_date_time,args=job.args, user_tg_id= user_id)
+                add_job_by_date(func=job.func, date_time=shifted_date_time, args=job.args, user_tg_id=user_id)
 
                 bot_logger.info(f"Rescheduled job | {job} | onto  {shifted_date_time}")

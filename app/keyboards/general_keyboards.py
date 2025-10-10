@@ -1,5 +1,6 @@
 from aiogram.types import (InlineKeyboardMarkup, InlineKeyboardButton)
 
+import texts
 from config import CHANNEL_NAME
 
 subscription_check_keyboard = InlineKeyboardMarkup(inline_keyboard=[
@@ -11,13 +12,23 @@ simple_subscription_keyboard = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='Подписаться', url=f'https://t.me/{CHANNEL_NAME[1:]}')],
 ])
 
+choose_time_keyboard = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='Выбрать время', callback_data='next_lesson_1')],
+])
+
 webinar_time_choice_keyboard = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text='12:00', callback_data="selected_webinar_time_12:00")],
     [InlineKeyboardButton(text='19:00', callback_data="selected_webinar_time_19:00")]
 ])
 
 lesson_1_keyboard = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text='Перейти к уроку 1', callback_data="next_lesson_1")],
+    [InlineKeyboardButton(text='Выбрать время', callback_data="next_lesson_1")],
+])
+
+lessons_snippets_keyboard = InlineKeyboardMarkup(inline_keyboard=[
+    [InlineKeyboardButton(text='Урок 1', url=texts.LESSON_1_LINK)],
+    [InlineKeyboardButton(text='Урок 2', url=texts.LESSON_2_LINK)],
+    [InlineKeyboardButton(text='Получить гайд', url=texts.GUIDE_LINK)]
 ])
 
 mark_purchase_keyboard = InlineKeyboardMarkup(inline_keyboard=[

@@ -13,7 +13,7 @@ import app.database.requests as rq
 import config
 from app import utils
 from app.middlewares import TestMiddleWare
-from texts import SUBSCRIPTION_NEEDED_MESSAGE, WELCOME_MESSAGE, GREETINGS_SUBSCRIBED_MESSAGE
+from texts import WELCOME_MESSAGE, GREETINGS_SUBSCRIBED_MESSAGE
 
 # ORDER OF METHODS MATTER - for example with the method above - if one handler is satisfied, then
 # message will be answered => all the other handlers won`t be looked at.
@@ -52,12 +52,13 @@ async def cmd_start(message: Message, bot: Bot):
         bot_logger.message_sent(user_id=message.chat.id, message_type="admin_welcome")
         return
 
-    await bot.send_video_note(message.chat.id, video_note=FSInputFile("assets/videos/welcome_video_note.mp4"))
+    # TODO Change video_note
+    await bot.send_video_note(message.chat.id, video_note=FSInputFile("assets/videos/welcome_video_note_new.mp4"))
     bot_logger.message_sent(user_id=message.chat.id, message_type="welcome_video_note")
 
     #if not await app.utils.check_user_subscription(message.chat.id, bot):
     await message.answer(WELCOME_MESSAGE,
-                     reply_markup=gkb.lesson_1_keyboard,
+                     reply_markup=gkb.choose_time_keyboard,
                      parse_mode=ParseMode.HTML)
     bot_logger.message_sent(user_id=message.chat.id, message_type="welcome_message")
     await app.utils.add_subscription_reminder(bot, message)
@@ -156,20 +157,20 @@ async def set_webinar_time_date(callback: CallbackQuery, bot : Bot):
     bot_logger.job_scheduled(user_id=user_tg_id, job_name="add_webinar_reminder", execution_time="future")
 
 
-@router1.callback_query(F.data == 'check_subscription')
-async def check_subscription(callback: CallbackQuery, bot: Bot):
-    bot_logger.user_action(user_id=callback.from_user.id, action="check_subscription")
-    if not await app.utils.check_user_subscription(callback.from_user.id, bot):
-        await bot.send_message(callback.from_user.id, SUBSCRIPTION_NEEDED_MESSAGE,
-                           parse_mode=ParseMode.HTML,
-                               reply_markup=gkb.lesson_1_keyboard)
-        bot_logger.message_sent(user_id=callback.from_user.id, message_type="subscription_needed")
-        return False
-    else:
-        await print_greet_message(callback.message, bot)
-        await app.utils.add_timer_for_lessons_message(1, callback.message, bot)
-        bot_logger.job_scheduled(user_id=callback.from_user.id, job_name="add_lessons_message_timer", execution_time="future")
-        return True
+# @router1.callback_query(F.data == 'check_subscription')
+# async def check_subscription(callback: CallbackQuery, bot: Bot):
+#     bot_logger.user_action(user_id=callback.from_user.id, action="check_subscription")
+#     if not await app.utils.check_user_subscription(callback.from_user.id, bot):
+#         await bot.send_message(callback.from_user.id, SUBSCRIPTION_NEEDED_MESSAGE,
+#                            parse_mode=ParseMode.HTML,
+#                                reply_markup=gkb.lesson_1_keyboard)
+#         bot_logger.message_sent(user_id=callback.from_user.id, message_type="subscription_needed")
+#         return False
+#     else:
+#         await print_greet_message(callback.message, bot)
+#         await app.utils.add_timer_for_lessons_message(1, callback.message, bot)
+#         bot_logger.job_scheduled(user_id=callback.from_user.id, job_name="add_lessons_message_timer", execution_time="future")
+#         return True
 
 
 @router1.callback_query(F.data == 'chosen_at_1_questionary_no')
@@ -183,7 +184,7 @@ async def restart_webinar_reminders(callback: CallbackQuery, bot: Bot):
     # Re-expires the buttons, also needed for setting 19:00 by default (if user doesn't choose anything)
     await rq.reset_webinar_date_time(callback.from_user.id)
     bot_logger.job_scheduled(user_id=callback.from_user.id, job_name="reset_webinar_date_time", execution_time="immediate")
-    await utils.send_lesson_message(3, message=callback.message, bot=bot)
+    await utils.send_lesson_message(1, message=callback.message, bot=bot)
     bot_logger.message_sent(user_id=callback.from_user.id, message_type="lesson_message_3")
 
 
@@ -216,7 +217,7 @@ async def restart_webinar_reminders(callback: CallbackQuery, bot: Bot):
     # Re-expires the buttons, also needed for setting 19:00 by default (if user doesn't choose anything)
     await rq.reset_webinar_date_time(callback.from_user.id)
     bot_logger.job_scheduled(user_id=callback.from_user.id, job_name="reset_webinar_date_time", execution_time="immediate")
-    await utils.send_lesson_message(3, message=callback.message, bot=bot)
+    await utils.send_lesson_message(1, message=callback.message, bot=bot)
     bot_logger.message_sent(user_id=callback.from_user.id, message_type="lesson_message_3")
 
 

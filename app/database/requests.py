@@ -70,7 +70,7 @@ async def get_all_users_ids():
         return result.scalars().all()
 
 
-async def get_users_id_with_webinar_time_and_date(time: str, webinar_date : date):
+async def get_users_id_with_webinar_time_and_date(time: str, webinar_date: date):
     async with async_session() as session:
         result = await session.execute(
             select(User.tg_id)
@@ -87,6 +87,7 @@ async def get_users_with_no_webinar_time_selected():
             .where(User.webinar_time == None)
         )
         return result.scalars().all()
+
 
 async def change_webinar_time(time, tg_id):
     async with async_session() as session:
@@ -226,7 +227,6 @@ async def initialize_lesson_messages():
 
         result = await session.execute(select(LessonMessages))
 
-        # Uncomment for another ay off intializing
         if result.scalars().first() is None:
             initial_messages = [
                 LessonMessages(
@@ -236,37 +236,15 @@ async def initialize_lesson_messages():
                     image=utils.read_file_as_binary(r"assets/images/lesson_1_photo.jpg"),
                     buttons={
                         "inline_keyboard": [
-                            [{"text": "Забрать гайд", "url": GUIDE_LINK}],
-                            [{"text": "Смотреть урок 1", "url": LESSON_1_LINK}],
-                            [{"text": "Перейти к уроку 2", "callback_data": "next_lesson_2"}]
-                        ]
-                    },
-
-                ),
-                LessonMessages(
-                    text=texts.LESSON_MESSAGE_2,
-                    code_name="lesson2",
-                    order_of_sending=2, delay_time_seconds=timings.LESSON_MESSAGE_2_AUTO_TIME,
-                    image=utils.read_file_as_binary(r"assets/images/lesson_2_photo.jpg"),
-                    buttons={
-                        "inline_keyboard": [
-                            [{"text": "Смотреть урок 2", "url": LESSON_2_LINK}],
-                            [{"text": "Перейти к уроку 3", "callback_data": "next_lesson_3"}]
-                        ]
-                    }
-                ),
-                LessonMessages(
-                    text=texts.LESSON_MESSAGE_3,
-                    code_name="lesson3",
-                    order_of_sending=3, delay_time_seconds=timings.LESSON_MESSAGE_3_AUTO_TIME,
-                    image=utils.read_file_as_binary(r"assets/images/lesson_3_photo.jpg"),
-                    buttons={
-                        "inline_keyboard": [
                             [{"text": "12:00", "callback_data": "selected_webinar_time_12:00"}],
-                            [{"text": "19:00", "callback_data": "selected_webinar_time_19:00"}]]
+                            [{"text": "19:00", "callback_data": "selected_webinar_time_19:00"}]
+                        ]
                     }
                 ),
             ]
+
+            # [InlineKeyboardButton(text='12:00', callback_data="selected_webinar_time_12:00")],
+            # [InlineKeyboardButton(text='19:00', callback_data="selected_webinar_time_19:00")]
             session.add_all(initial_messages)
             await session.commit()
             print("Initial lesson messages created")
@@ -287,7 +265,7 @@ async def initialize_webinar_messages():
                 WebinarMessages(text=texts.WEBINAR_REMINDER_1,
                                 order_of_sending=1, delay_time_seconds=0,
                                 buttons={
-                                    "inline_keyboard": [[{"text": "Подтверждение и гайд",
+                                    "inline_keyboard": [[{"text": "Подтвердить запись",
                                                           "url": CONFIRM_LINK}],
                                                         [{"text": "Подписаться на канал",
                                                           "url": CHANNEL_LINK}]]

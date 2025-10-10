@@ -54,6 +54,7 @@ class LessonMessages(Base):
     delay_time_seconds : Mapped[BigInteger] = mapped_column(BigInteger, default=10)
     image: Mapped[String] = mapped_column(LargeBinary, nullable=True)
     buttons: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True, default = None)
+    video_note_path: Mapped[str] = mapped_column(String(3000), nullable=True, default=None)
 
 class WebinarMessages(Base):
     __tablename__ = 'webinar_messages'
@@ -66,6 +67,7 @@ class WebinarMessages(Base):
     flag: Mapped[Boolean] = mapped_column(Boolean, default=False)
     image: Mapped[String] = mapped_column(LargeBinary, nullable=True, default=None)
     buttons: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True, default = None)
+    video_note_path: Mapped[str] = mapped_column(String(3000), default=None, nullable=True)
 
 class FirstOfferMessages(Base):
     __tablename__ = 'first_offer_messages'
@@ -77,6 +79,7 @@ class FirstOfferMessages(Base):
     delay_time_seconds: Mapped[BigInteger] = mapped_column(BigInteger, default=10)
     image: Mapped[String] = mapped_column(LargeBinary, nullable=True)
     buttons: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True, default = None)
+    video_note_path: Mapped[str] = mapped_column(String(3000), default=None, nullable=True)
 
 
 class FinalOfferMessages(Base):
@@ -89,6 +92,7 @@ class FinalOfferMessages(Base):
     delay_time_seconds: Mapped[BigInteger] = mapped_column(BigInteger, default=10)
     image: Mapped[String] = mapped_column(LargeBinary, nullable=True)
     buttons: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True, default = None)
+    video_note_path: Mapped[str] = mapped_column(String(3000), default=None, nullable=True)
 
 class UserMetrics(Base):
     __tablename__ = 'users_metrics'
