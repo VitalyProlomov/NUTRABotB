@@ -757,24 +757,24 @@ async def emergency_scheduler_restart(bot: Bot):
                                last_name="Scheduled",
                                ),
                 chat_instance="simulated_instance",
-                data="selected_webinar_time_12:00",
+                data="selected_webinar_time_19:00",
                 message=mock_message
             )
 
             time_chosen = await rq.get_user_webinar_time(not_done_id)
             if time_chosen is None:
-                time_chosen = "12:00"
+                time_chosen = "19:00"
 
             start_time = datetime.combine(
                 # TODO
-                now.date() + timedelta(days=1),  # NEXT DAY
+                now.date(),  # THIS DAY
                 time(hour=6, minute=0),  # At 06:00
                 tzinfo=MOSCOW_TZ
             )
 
             if time_chosen == "19:00":
                 start_time = datetime.combine(
-                    now.date() + timedelta(days=1),  # NEXT DAY
+                    now.date(),  # THIS DAY
                     time(hour=19 - 6, minute=0),  # At 13:00 - 6 hours before the webinar
                     tzinfo=MOSCOW_TZ
                 )
