@@ -1,5 +1,5 @@
 # WELCOME_MESSAGE1
-from config import CHANNEL_NAME, CHANNEL_ID
+from config import CHANNEL_NAME
 
 WELCOME_MESSAGE = '''<b>🎉 Я тебя поздравляю</b>, ты получаешь <b>бесплатный доступ к практикуму</b>, на котором я расскажу, как <b>убрать 4-9 кг</b> без спорта и диет за 28 дней!
 
@@ -679,4 +679,4 @@ LESSON_1_LINK = "https://ekaterina-hodianok.ru/l1"
 
 LESSON_2_LINK = "https://ekaterina-hodianok.ru/l2"
 
-CHANNEL_LINK = f'https://t.me/{CHANNEL_ID[1:]}'
+CHANNEL_LINK = f'https://t.me/{CHANNEL_NAME[1:]}'
