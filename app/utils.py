@@ -721,73 +721,31 @@ def remove_job(job_id):
         bot_logger.error(None, f"Removing job {job_id}", e)
 
 
-async def emergency_scheduler_restart(bot: Bot):
-    """
-    Function to start the scheduler of webinar reminder for all not done users when the bot is restarted
-    :return:
-    """
-    reminder_index = 2
+async def daily_webinar_reminder_message_shift(emergency_mode = False):
+    today = datetime.now().date()
 
-    not_done_users_id = await rq.get_all_not_done_users_ids()
+    action_date_time = datetime.combine(
+        date=today,
+        time=time(hour=6, minute=0))
+    ids_first_time = await rq.get_users_id_with_webinar_time_and_date(timings.FIRST_WEBINAR_TIME, today)
+    await shift_daily_message_for_selected_users(ids_first_time, action_date_time=action_date_time)
 
-    now = datetime.now()
-    for not_done_id in not_done_users_id:
-        try:
-            mock_message = Message(
-                message_id=0,
-                date=now,
-                chat=Chat(
-                    id=not_done_id,
-                    type="private"
-                ),
-                from_user=User(
-                    id=not_done_id,
-                    is_bot=False,
-                    first_name="Fake_User",
-                    last_name="Scheduled",
-                    username="fake_user"
-                ),
-                text="This is a mock message"
-            )
-            callback = CallbackQuery(
-                id=f'{not_done_id}-{datetime.now()}',
-                from_user=User(id=not_done_id,
-                               is_bot=False,
-                               first_name="Fake_User_Callback",
-                               last_name="Scheduled",
-                               ),
-                chat_instance="simulated_instance",
-                data="selected_webinar_time_19:00",
-                message=mock_message
-            )
+    action_date_time = datetime.combine(
+        date=today,
+        time=time(hour=13, minute=0))
+    ids_second_time = await rq.get_users_id_with_webinar_time_and_date(timings.SECOND_WEBINAR_TIME, today)
+    await shift_daily_message_for_selected_users(ids_second_time, action_date_time)
 
-            time_chosen = await rq.get_user_webinar_time(not_done_id)
-            if time_chosen is None:
-                time_chosen = "19:00"
+    if emergency_mode:
+        action_date_time = datetime.combine(
+            date=today,
+            time=time(hour=13, minute=0))
+        ids_none = await rq.get_users_with_no_webinar_day_selected()
+        await shift_daily_message_for_selected_users(ids_none, action_date_time)
 
-            start_time = datetime.combine(
-                # TODO
-                now.date(),  # THIS DAY
-                time(hour=6, minute=0),  # At 06:00
-                tzinfo=MOSCOW_TZ
-            )
-
-            if time_chosen == "19:00":
-                start_time = datetime.combine(
-                    now.date(),  # THIS DAY
-                    time(hour=19 - 6, minute=0),  # At 13:00 - 6 hours before the webinar
-                    tzinfo=MOSCOW_TZ
-                )
-            job = add_job_by_date(
-                send_webinar_reminder,
-                date_time=start_time,
-                args=[bot, callback, reminder_index],
-                user_tg_id=callback.from_user.id
-                # done_id=f"nextday9am_{chat_id}_{tomorrow_9am.timestamp()}"
-            )
-            bot_logger.job_scheduled(not_done_id, f"send_webinar_reminder_{reminder_index}", str(job.next_run_time))
-        except Exception as ex:
-            bot_logger.error(user_id=not_done_id, context="emergency startup", error=ex)
+    # Since this function is called at 00:10, we use today`s date
+    tooday_date_time: datetime = datetime.combine(today, time(hour=23, minute=50))
+    add_job_by_date(daily_deadline_message_shift, tooday_date_time, [], user_tg_id=1234567890)
 
 
 def generate_random_number_for_n_users(users_amount: int):
