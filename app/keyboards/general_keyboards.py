@@ -1,15 +1,15 @@
 from aiogram.types import (InlineKeyboardMarkup, InlineKeyboardButton)
 
 import texts
-from config import CHANNEL_NAME
+from config import CHANNEL_NAME, CHANNEL_ID
 
 subscription_check_keyboard = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text='Подписаться', url=f'https://t.me/{CHANNEL_NAME[1:]}')],
+    [InlineKeyboardButton(text='Подписаться', url=f'https://t.me/{CHANNEL_ID[1:]}')],
     [InlineKeyboardButton(text='Готово', callback_data='check_subscription')]
 ])
 
 simple_subscription_keyboard = InlineKeyboardMarkup(inline_keyboard=[
-    [InlineKeyboardButton(text='Подписаться', url=f'https://t.me/{CHANNEL_NAME[1:]}')],
+    [InlineKeyboardButton(text='Подписаться', url=f'https://t.me/{CHANNEL_ID[1:]}')],
 ])
 
 choose_time_keyboard = InlineKeyboardMarkup(inline_keyboard=[
