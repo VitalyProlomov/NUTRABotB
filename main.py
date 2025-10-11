@@ -101,7 +101,7 @@ async def main():
             bot_logger.error(None, "emergency scheduler failed", ex)
         # -----------------------
         # Emergency shuffle (at night)
-        await daily_webinar_reminder_message_shift()
+        await daily_webinar_reminder_message_shift(emergency_mode=True)
 
 
         # BUTTON SENDING BLOCK
