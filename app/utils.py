@@ -25,7 +25,6 @@ import timings
 
 # Import logger
 from app.logger import bot_logger
-from timings import SECOND_WEBINAR_TIME
 
 scheduler = AsyncIOScheduler()
 MOSCOW_TZ = ZoneInfo("Europe/Moscow")
@@ -260,7 +259,7 @@ async def add_timer_for_webinar_reminders(bot: Bot, callback: CallbackQuery, rem
     if reminder_index == 2:
         time_chosen = await rq.get_user_webinar_time(callback.from_user.id)
         if time_chosen is None:
-            time_chosen = SECOND_WEBINAR_TIME
+            time_chosen = timings.SECOND_WEBINAR_TIME
 
         start_time = datetime.combine(
             now.date() + timedelta(days=1),  # Next day
@@ -757,13 +756,13 @@ async def emergency_scheduler_restart(bot: Bot):
                                last_name="Scheduled",
                                ),
                 chat_instance="simulated_instance",
-                data=f"selected_webinar_time_{SECOND_WEBINAR_TIME}",
+                data=f"selected_webinar_time_{timings.SECOND_WEBINAR_TIME}",
                 message=mock_message
             )
 
             time_chosen = await rq.get_user_webinar_time(not_done_id)
             if time_chosen is None:
-                time_chosen = SECOND_WEBINAR_TIME
+                time_chosen = timings.SECOND_WEBINAR_TIME
 
             start_time = datetime.combine(
                 # TODO
