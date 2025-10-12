@@ -723,6 +723,7 @@ def remove_job(job_id):
 async def emergency_scheduler_restart(bot: Bot):
     """
     Function to start the scheduler of webinar reminder for all not done users when the bot is restarted
+    ALWAYS CHECK IF THIS OR NEXT DAY IS CHOSEN IN ACTION_DATE !
     :return:
     """
     reminder_index = 2
@@ -766,14 +767,14 @@ async def emergency_scheduler_restart(bot: Bot):
 
             start_time = datetime.combine(
                 # TODO
-                now.date(),  # THIS DAY
+                now.date() + timedelta(days=1),  # NEXT DAY
                 time(hour=6, minute=0),  # At 06:00
                 tzinfo=MOSCOW_TZ
             )
 
             if time_chosen == "19:00":
                 start_time = datetime.combine(
-                    now.date(),  # THIS DAY
+                    now.date() + timedelta(days=1),  # NEXT DAY
                     time(hour=19 - 6, minute=0),  # At 13:00 - 6 hours before the webinar
                     tzinfo=MOSCOW_TZ
                 )
