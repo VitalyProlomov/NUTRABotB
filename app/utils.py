@@ -720,10 +720,12 @@ def remove_job(job_id):
     except Exception as e:
         bot_logger.error(None, f"Removing job {job_id}", e)
 
-async def emergency_scheduler_restart(bot: Bot):
+async def emergency_scheduler_restart(bot: Bot, today_or_tomorrow: str):
     """
     Function to start the scheduler of webinar reminder for all not done users when the bot is restarted
     ALWAYS CHECK IF THIS OR NEXT DAY IS CHOSEN IN ACTION_DATE !
+    today_or_tomorrow - states whether the task will be scheduled for this day or the next day - must be either
+    "today" for this day (if bot is started after 23:59) or "tomorrow" for next day (if bot is started before 23:59)
     :return:
     """
     reminder_index = 2
@@ -765,16 +767,19 @@ async def emergency_scheduler_restart(bot: Bot):
             if time_chosen is None:
                 time_chosen = timings.SECOND_WEBINAR_TIME
 
+            task_date = now.date()
+            if today_or_tomorrow == "tomorrow":
+                task_date = task_date + timedelta(days=1)
             start_time = datetime.combine(
                 # TODO
-                now.date() + timedelta(days=1),  # NEXT DAY
+                task_date,  # THIS or NEXT DAY
                 time(hour=6, minute=0),  # At 06:00
                 tzinfo=MOSCOW_TZ
             )
 
             if time_chosen == "19:00":
                 start_time = datetime.combine(
-                    now.date() + timedelta(days=1),  # NEXT DAY
+                    task_date,  # THIS or NEXT DAY
                     time(hour=19 - 6, minute=0),  # At 13:00 - 6 hours before the webinar
                     tzinfo=MOSCOW_TZ
                 )
@@ -790,15 +795,17 @@ async def emergency_scheduler_restart(bot: Bot):
             bot_logger.error(user_id=not_done_id, context="emergency startup", error=ex)
 
 
-async def daily_webinar_reminder_message_shift(emergency_mode = False):
+async def daily_webinar_reminder_message_shift(emergency_mode = False, today_or_tomorrow: str = None):
     """
     DONT FORGET TO SET THE DATE FOR EMERGENCY MODE
+    :param today_or_tomorrow: strictly for emergency mode use
     :param emergency_mode:
     :return:
     """
     today = datetime.now().date()
     if emergency_mode:
-        today = today + timedelta(days=1)
+        if today_or_tomorrow == "tomorrow":
+            today = today + timedelta(days=1)
 
 
     action_date_time = datetime.combine(
