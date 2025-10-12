@@ -791,7 +791,15 @@ async def emergency_scheduler_restart(bot: Bot):
 
 
 async def daily_webinar_reminder_message_shift(emergency_mode = False):
+    """
+    DONT FORGET TO SET THE DATE FOR EMERGENCY MODE
+    :param emergency_mode:
+    :return:
+    """
     today = datetime.now().date()
+    if emergency_mode:
+        today = today + timedelta(days=1)
+
 
     action_date_time = datetime.combine(
         date=today,
