@@ -138,7 +138,7 @@ async def set_webinar_time_date(callback: CallbackQuery, bot : Bot):
     # if webinar_date is not None and utils.did_webinar_date_come(webinar_date):
     #     return # buttons expired
 
-    utils.remove_all_user_jobs(tg_id=callback.from_user.id)
+    utils.remove_all_user_jobs(tg_id=user_tg_id)
     bot_logger.job_executed(user_id=user_tg_id, job_name="remove_all_user_jobs")
 
     if callback.from_user.first_name != "Fake_User_Callback" or callback.from_user.last_name != "Scheduled":
@@ -152,7 +152,7 @@ async def set_webinar_time_date(callback: CallbackQuery, bot : Bot):
     await rq.change_webinar_time(time, user_tg_id)
     bot_logger.job_scheduled(user_id=user_tg_id, job_name="change_webinar_time", execution_time="immediate")
 
-    utils.remove_all_user_jobs(callback.from_user.id)
+    utils.remove_all_user_jobs(user_tg_id)
     await utils.add_timer_for_webinar_reminders(bot, callback, 1)
     bot_logger.job_scheduled(user_id=user_tg_id, job_name="add_webinar_reminder", execution_time="future")
 

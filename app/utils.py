@@ -95,7 +95,7 @@ async def send_lesson_message(lesson_message_order: int, message: Message, bot: 
     user_id = message.chat.id
     bot_logger.job_executed(user_id, f"send_lesson_message_{lesson_message_order}", "started")
 
-    remove_all_user_jobs(message.chat.id)
+    remove_all_user_jobs(user_id)
     try:
         # if not await did_user_mark_purchase(message.chat.id):
         #     t = await rq.get_lesson_message_info(lesson_message_order)
@@ -124,6 +124,7 @@ async def send_lesson_message(lesson_message_order: int, message: Message, bot: 
             await send_message_with_photo(bot, message.chat.id, image_file, lesson_info.text, reply_markup)
             bot_logger.message_sent(user_id, f"lesson_message_{lesson_message_order}", "with photo")
         # [09.10] I do not understand what is the purpose of this condition below..
+        # It was probably written before the add_job_by_dealy and i manually removed jobs
         if lesson_message_order != 1:
             remove_all_user_jobs(message.chat.id)
             # await message.edit_reply_markup(reply_markup=None)
@@ -144,7 +145,7 @@ async def add_timer_for_webinar_time_choice_reminder(bot: Bot, message):
     job = add_job_by_delay(send_webinar_time_choice_reminder,
                            delay_seconds=delay_seconds,
                            args=[bot, message],
-                           user_tg_id=message.chat.id)
+                           user_tg_id=user_id)
 
     bot_logger.job_scheduled(user_id, "send_webinar_time_choice_reminder", str(job.next_run_time))
 
