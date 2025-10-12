@@ -25,6 +25,7 @@ import timings
 
 # Import logger
 from app.logger import bot_logger
+from timings import SECOND_WEBINAR_TIME
 
 scheduler = AsyncIOScheduler()
 MOSCOW_TZ = ZoneInfo("Europe/Moscow")
@@ -171,7 +172,7 @@ async def send_webinar_time_choice_reminder(bot: Bot, message: Message):
                        last_name="Scheduled",
                        ),
         chat_instance="simulated_instance",
-        data="selected_webinar_time_12:00",
+        data=f"selected_webinar_time_{timings.SECOND_WEBINAR_TIME}",
         message=message
     )
 
@@ -259,7 +260,7 @@ async def add_timer_for_webinar_reminders(bot: Bot, callback: CallbackQuery, rem
     if reminder_index == 2:
         time_chosen = await rq.get_user_webinar_time(callback.from_user.id)
         if time_chosen is None:
-            time_chosen = "19:00"
+            time_chosen = SECOND_WEBINAR_TIME
 
         start_time = datetime.combine(
             now.date() + timedelta(days=1),  # Next day
@@ -756,13 +757,13 @@ async def emergency_scheduler_restart(bot: Bot):
                                last_name="Scheduled",
                                ),
                 chat_instance="simulated_instance",
-                data="selected_webinar_time_19:00",
+                data=f"selected_webinar_time_{SECOND_WEBINAR_TIME}",
                 message=mock_message
             )
 
             time_chosen = await rq.get_user_webinar_time(not_done_id)
             if time_chosen is None:
-                time_chosen = "19:00"
+                time_chosen = SECOND_WEBINAR_TIME
 
             start_time = datetime.combine(
                 # TODO
@@ -809,7 +810,8 @@ async def daily_webinar_reminder_message_shift(emergency_mode = False):
             date=today,
             time=time(hour=13, minute=0))
         ids_none = await rq.get_users_with_no_webinar_day_selected()
-        await shift_daily_message_for_selected_users(ids_none, action_date_time)
+
+        await shift_daily_message_for_selected_users(ids_none + ids_second_time, action_date_time)
 
     # Since this function is called at 00:10, we use today`s date
     tooday_date_time: datetime = datetime.combine(today, time(hour=23, minute=50))
