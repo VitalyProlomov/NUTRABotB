@@ -63,7 +63,7 @@ async def main():
 
     try:
         # timings.test_mode()
-        bot_logger.info("Test mode turned on")
+        # bot_logger.info("Test mode turned on")
 
         await async_main()
         bot_logger.debug("Database initialized")
