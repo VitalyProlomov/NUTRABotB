@@ -827,7 +827,7 @@ async def daily_webinar_reminder_message_shift(emergency_mode = False, today_or_
 
     # Since this function is called at 00:10, we use today`s date
     shifting_date_time: datetime = datetime.combine(action_date, time(hour=23, minute=50))
-    add_job_by_date(daily_deadline_message_shift, shifting_date_time, [], user_tg_id=1234567890)
+    add_job_by_date(daily_deadline_message_shift, shifting_date_time, [], user_tg_id=12345678901)
 
 
 def generate_random_number_for_n_users(users_amount: int):
@@ -877,7 +877,7 @@ async def daily_deadline_message_shift(emergency_mode = False):
 
     tomorrow: date = today + timedelta(days=1)
     tomorrow_date_time = datetime.combine(tomorrow, time(hour=0, minute=10))
-    add_job_by_date(daily_webinar_reminder_message_shift, tomorrow_date_time, [], user_tg_id=1234567890)
+    add_job_by_date(daily_webinar_reminder_message_shift, tomorrow_date_time, [], user_tg_id=12345678902)
 
 
 
