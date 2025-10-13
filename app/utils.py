@@ -802,63 +802,60 @@ async def daily_webinar_reminder_message_shift(emergency_mode = False, today_or_
     :param emergency_mode:
     :return:
     """
-    today = datetime.now().date()
+    action_date = datetime.now().date()
     if emergency_mode:
         if today_or_tomorrow == "tomorrow":
-            today = today + timedelta(days=1)
+            action_date = action_date + timedelta(days=1)
 
 
     action_date_time = datetime.combine(
-        date=today,
+        date=action_date,
         time=time(hour=6, minute=0))
-    ids_first_time = await rq.get_users_id_with_webinar_time_and_date(timings.FIRST_WEBINAR_TIME, today)
+    ids_first_time = await rq.get_users_id_with_webinar_time_and_date(timings.FIRST_WEBINAR_TIME, action_date)
     await shift_daily_message_for_selected_users(ids_first_time, action_date_time=action_date_time)
 
+
     action_date_time = datetime.combine(
-        date=today,
+        date=action_date,
         time=time(hour=13, minute=0))
-    ids_second_time = await rq.get_users_id_with_webinar_time_and_date(timings.SECOND_WEBINAR_TIME, today)
-    await shift_daily_message_for_selected_users(ids_second_time, action_date_time)
+    ids_second_time = await rq.get_users_id_with_webinar_time_and_date(timings.SECOND_WEBINAR_TIME, action_date)
 
     if emergency_mode:
-        action_date_time = datetime.combine(
-            date=today,
-            time=time(hour=13, minute=0))
         ids_none = await rq.get_users_with_no_webinar_day_selected()
-
-        await shift_daily_message_for_selected_users(ids_none + ids_second_time, action_date_time)
+        ids_second_time = ids_second_time + ids_none
+    await shift_daily_message_for_selected_users(ids_second_time, action_date_time)
 
     # Since this function is called at 00:10, we use today`s date
-    tooday_date_time: datetime = datetime.combine(today, time(hour=23, minute=50))
-    add_job_by_date(daily_deadline_message_shift, tooday_date_time, [], user_tg_id=1234567890)
+    shifting_date_time: datetime = datetime.combine(action_date, time(hour=23, minute=50))
+    add_job_by_date(daily_deadline_message_shift, shifting_date_time, [], user_tg_id=1234567890)
 
 
 def generate_random_number_for_n_users(users_amount: int):
-    seconds_amount = (users_amount // 15) * 5
+    seconds_amount = (users_amount // 15) * 8
     return random.randint(-1 * seconds_amount // 2, seconds_amount // 2)
 
 
-def get_seconds_remainder(time_in_seconds: int):
-    if time_in_seconds < 0:
-        return -1 * get_seconds_remainder(time_in_seconds * -1)
-    return time_in_seconds % 60
-
-def get_minutes_from_seconds(time_in_seconds: int):
-    if time_in_seconds < 0:
-        return -1 * get_minutes_from_seconds(time_in_seconds * -1)
-    if (time_in_seconds // 60) >= 60:
-        return (time_in_seconds // 60) % 60
-
-    return time_in_seconds // 60
-
-def get_hours_from_seconds(time_in_seconds: int):
-    if time_in_seconds < 0:
-        return -1 * get_hours_from_seconds(time_in_seconds * -1)
-
-    return time_in_seconds // (60 * 60)
+# def get_seconds_remainder(time_in_seconds: int):
+#     if time_in_seconds < 0:
+#         return -1 * get_seconds_remainder(time_in_seconds * -1)
+#     return time_in_seconds % 60
+#
+# def get_minutes_from_seconds(time_in_seconds: int):
+#     if time_in_seconds < 0:
+#         return -1 * get_minutes_from_seconds(time_in_seconds * -1)
+#     if (time_in_seconds // 60) >= 60:
+#         return (time_in_seconds // 60) % 60
+#
+#     return time_in_seconds // 60
+#
+# def get_hours_from_seconds(time_in_seconds: int):
+#     if time_in_seconds < 0:
+#         return -1 * get_hours_from_seconds(time_in_seconds * -1)
+#
+#     return time_in_seconds // (60 * 60)
 
 def shift_time_after(users_amount: int, date_time: datetime) -> datetime:
-    seconds_shift = (users_amount // 15) * 5
+    seconds_shift = (users_amount // 15) * 8
     seconds_shift = random.randint(1, seconds_shift + 1)
     shifted_date_time = date_time + timedelta(seconds=seconds_shift)
     return shifted_date_time

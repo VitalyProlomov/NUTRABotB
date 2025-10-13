@@ -92,17 +92,19 @@ async def main():
 
         # EMERGENCY SCHEDULER RESTART BLOCK
         # --------------------------------
+        # "today" or "tomorrow"
+        today_or_tomorrow = "today"
         try:
             a = await rq.get_all_not_done_users_ids()
 
             bot_logger.info(f"Not done Users in db: {len(a)}")
-            # "today" or "tomorrow"
-            await emergency_scheduler_restart(bot=main_bot, today_or_tomorrow="tomorrow")
+
+            await emergency_scheduler_restart(bot=main_bot, today_or_tomorrow=today_or_tomorrow)
         except Exception as ex:
             bot_logger.error(None, "emergency scheduler failed", ex)
         # -----------------------
         # Emergency shuffle (at night)
-        await daily_webinar_reminder_message_shift(emergency_mode=True, today_or_tomorrow="tomorrow")
+        await daily_webinar_reminder_message_shift(emergency_mode=True, today_or_tomorrow=today_or_tomorrow)
 
 
         # BUTTON SENDING BLOCK
