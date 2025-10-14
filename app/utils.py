@@ -31,7 +31,7 @@ MOSCOW_TZ = ZoneInfo("Europe/Moscow")
 
 import app.routers.user_router
 
-DO_NOT_REMOVE_TEXT : str = "DO NOT REMOVE"
+DO_NOT_REMOVE_TEXT: str = "DO NOT REMOVE"
 
 
 # # order important due to circular imports - BULLSHIT, try through main
@@ -672,7 +672,9 @@ def add_job_by_date(func: Any, date_time: datetime, args: list | tuple, user_tg_
                              id=job_id,
                              replace_existing=True)
 
-def add_UNREMOVABLE_job_by_date_without_removing_other_user_tasks(func: Any, date_time: datetime, kwargs: dict | None, user_tg_id: int) -> Job:
+
+def add_UNREMOVABLE_job_by_date_without_removing_other_user_tasks(func: Any, date_time: datetime, kwargs: dict | None,
+                                                                  user_tg_id: int) -> Job:
     """
     Works the same way as add_job_by_date, but it doesn't remove other jobs of user when initiated, and
     it will not be removed by remove_all_user_jobs of the same user is initiated.
@@ -687,6 +689,7 @@ def add_UNREMOVABLE_job_by_date_without_removing_other_user_tasks(func: Any, dat
                              kwargs=kwargs,
                              id=job_id,
                              replace_existing=True)
+
 
 def remove_all_user_jobs(tg_id: int):
     """
@@ -720,6 +723,7 @@ def remove_job(job_id):
     except Exception as e:
         bot_logger.error(None, f"Removing job {job_id}", e)
 
+
 async def emergency_scheduler_restart(bot: Bot, today_or_tomorrow: str):
     """
     Function to start the scheduler of webinar reminder for all not done users when the bot is restarted
@@ -732,6 +736,7 @@ async def emergency_scheduler_restart(bot: Bot, today_or_tomorrow: str):
 
     not_done_users_id = await rq.get_all_not_done_users_ids()
 
+    counter = 0
     now = datetime.now()
     for not_done_id in not_done_users_id:
         try:
@@ -770,19 +775,22 @@ async def emergency_scheduler_restart(bot: Bot, today_or_tomorrow: str):
             task_date = now.date()
             if today_or_tomorrow == "tomorrow":
                 task_date = task_date + timedelta(days=1)
+            # start_time = datetime.combine(
+            #     # TODO
+            #     task_date,  # THIS or NEXT DAY
+            #     time(hour=6, minute=0),  # At 06:00
+            #     tzinfo=MOSCOW_TZ
+            # )
+
+            # if time_chosen == "19:00":
+            shift = counter // 10
+            counter = counter + 1
             start_time = datetime.combine(
-                # TODO
                 task_date,  # THIS or NEXT DAY
-                time(hour=6, minute=0),  # At 06:00
+                time(hour=19 - 6, minute=0),  # At 13:00 - 6 hours before the webinar
                 tzinfo=MOSCOW_TZ
             )
-
-            if time_chosen == "19:00":
-                start_time = datetime.combine(
-                    task_date,  # THIS or NEXT DAY
-                    time(hour=19 - 6, minute=0),  # At 13:00 - 6 hours before the webinar
-                    tzinfo=MOSCOW_TZ
-                )
+            start_time = start_time + timedelta(seconds=shift)
             job = add_job_by_date(
                 send_webinar_reminder,
                 date_time=start_time,
@@ -795,7 +803,7 @@ async def emergency_scheduler_restart(bot: Bot, today_or_tomorrow: str):
             bot_logger.error(user_id=not_done_id, context="emergency startup", error=ex)
 
 
-async def daily_webinar_reminder_message_shift(emergency_mode = False, today_or_tomorrow: str = None):
+async def daily_webinar_reminder_message_shift(emergency_mode=False, today_or_tomorrow: str = None):
     """
     DONT FORGET TO SET THE DATE FOR EMERGENCY MODE
     :param today_or_tomorrow: strictly for emergency mode use
@@ -807,13 +815,11 @@ async def daily_webinar_reminder_message_shift(emergency_mode = False, today_or_
         if today_or_tomorrow == "tomorrow":
             action_date = action_date + timedelta(days=1)
 
-
     action_date_time = datetime.combine(
         date=action_date,
         time=time(hour=6, minute=0))
     ids_first_time = await rq.get_users_id_with_webinar_time_and_date(timings.FIRST_WEBINAR_TIME, action_date)
     await shift_daily_message_for_selected_users(ids_first_time, action_date_time=action_date_time)
-
 
     action_date_time = datetime.combine(
         date=action_date,
@@ -860,13 +866,14 @@ def shift_time_after(users_amount: int, date_time: datetime) -> datetime:
     shifted_date_time = date_time + timedelta(seconds=seconds_shift)
     return shifted_date_time
 
+
 def shift_time_around(users_amount: int, date_time: datetime) -> datetime:
     seconds_shift = generate_random_number_for_n_users(users_amount)
     shifted_date_time = date_time + timedelta(seconds=seconds_shift)
     return shifted_date_time
 
 
-async def daily_deadline_message_shift(emergency_mode = False):
+async def daily_deadline_message_shift(emergency_mode=False):
     today = datetime.now().date()
 
     action_date_time = datetime.combine(
@@ -880,8 +887,7 @@ async def daily_deadline_message_shift(emergency_mode = False):
     add_job_by_date(daily_webinar_reminder_message_shift, tomorrow_date_time, [], user_tg_id=12345678902)
 
 
-
-async def shift_daily_message_for_selected_users(users_ids, action_date_time : datetime):
+async def shift_daily_message_for_selected_users(users_ids, action_date_time: datetime):
     for job in scheduler.get_jobs():
         for user_id in users_ids:
             if str(user_id) in job.id:
@@ -890,6 +896,6 @@ async def shift_daily_message_for_selected_users(users_ids, action_date_time : d
                     date_time=action_date_time
                 )
 
-                add_job_by_date(func=job.func,date_time=shifted_date_time,args=job.args, user_tg_id= user_id)
+                add_job_by_date(func=job.func, date_time=shifted_date_time, args=job.args, user_tg_id=user_id)
 
                 bot_logger.info(f"Rescheduled job | {job} | onto  {shifted_date_time}")
