@@ -790,7 +790,7 @@ async def emergency_scheduler_restart(bot: Bot, today_or_tomorrow: str):
                 time(hour=19 - 6, minute=0),  # At 13:00 - 6 hours before the webinar
                 tzinfo=MOSCOW_TZ
             )
-            start_time = start_time + timedelta(seconds=shift)
+            start_time = start_time + timedelta(seconds=shift * 2)
             job = add_job_by_date(
                 send_webinar_reminder,
                 date_time=start_time,
