@@ -156,6 +156,13 @@ async def set_webinar_time_date(callback: CallbackQuery, bot : Bot):
     await utils.add_timer_for_webinar_reminders(bot, callback, 1)
     bot_logger.job_scheduled(user_id=user_tg_id, job_name="add_webinar_reminder", execution_time="future")
 
+@router1.callback_query(F.data == 'get_lessons_snippets')
+async def get_lessons_snippets(callback: CallbackQuery, bot: Bot):
+    user_id = callback.from_user.id
+    utils.remove_all_user_jobs(user_id)
+    await utils.send_lessons_snippets_message(bot=bot, callback=callback)
+
+
 
 # @router1.callback_query(F.data == 'check_subscription')
 # async def check_subscription(callback: CallbackQuery, bot: Bot):

@@ -275,8 +275,8 @@ async def initialize_webinar_messages():
                                 buttons={
                                     "inline_keyboard": [[{"text": "Подтвердить запись",
                                                           "url": CONFIRM_LINK}],
-                                                        [{"text": "Подписаться на канал",
-                                                          "url": CHANNEL_LINK}]]
+                                                        [{"text": "Получить уроки",
+                                                          "callback_data": "get_lessons_snippets"}]]
                                 }
                                 ),
                 WebinarMessages(text=texts.WEBINAR_REMINDER_2,

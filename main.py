@@ -4,6 +4,7 @@ import logging
 from aiogram import Bot, Dispatcher
 
 import timings
+from app import utils
 from config import TOKEN
 from app.routers.user_router import router1
 from app.routers.admin_router import admin_router
@@ -107,6 +108,10 @@ async def main():
         # BUTTON SENDING BLOCK
 
         # await app.utils.send_button_message_to_channel(main_bot, text=texts.PINNED_MESSAGE)
+
+        action_date = datetime.now().date()
+        shifting_date_time: datetime = datetime.combine(action_date, time(hour=23, minute=50))
+        utils.add_job_by_date(utils.daily_deadline_message_shift, shifting_date_time, [], user_tg_id=12345678901)
 
         bot_logger.info("Bot starting to poll...")
         await dp.start_polling(main_bot, on_startup=on_startup)
